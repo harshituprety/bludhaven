@@ -1,0 +1,61 @@
+/* Shared by Login + Register */
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-card h1 {
+  font-size: var(--text-3xl);
+}
+
+.auth-card__lead {
+  margin: var(--space-2) 0 var(--space-6);
+  color: var(--ink-soft);
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap .input {
+  padding-right: 3rem;
+}
+
+.input-wrap .icon-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.field__hint {
+  color: var(--ink-soft);
+}
+
+.auth-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--lagoon-50);
+  color: var(--lagoon-900);
+  font-size: var(--text-sm);
+}
+
+.auth-card__switch {
+  margin-top: var(--space-5);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.auth-card__switch a {
+  color: var(--lagoon-700);
+  font-weight: 700;
+}

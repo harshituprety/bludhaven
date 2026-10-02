@@ -1,0 +1,114 @@
+// Downloads a photo for every entry in src/assets/images/catalog.js from Pexels
+// into src/assets/images/<folder>/<file>, and records who took each one in
+// src/assets/images/credits.json and CREDITS.md.
+//
+//   npm run images            download anything that is missing
+//   npm run images -- --force pick and download everything again (overwrites .jpg only)
+//
+// Needs a free API key from https://www.pexels.com/api/ in frontend/.env:
+//   PEXELS_API_KEY=your-key
+// The name has no VITE_ prefix on purpose, so Vite never puts it in the browser bundle.
+// Photos are used under the Pexels License: https://www.pexels.com/license/
+
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { catalog } from '../src/assets/images/catalog.js'
+
+const here = path.dirname(fileURLToPath(import.meta.url))
+const root = path.resolve(here, '../src/assets/images')
+const creditsFile = path.join(root, 'credits.json')
+const force = process.argv.includes('--force')
+
+const exists = (file) => stat(file).then(() => true, () => false)
+const readJson = (file) => readFile(file, 'utf8').then(JSON.parse, () => ({}))
+
+async function loadKey() {
+  if (process.env.PEXELS_API_KEY) return process.env.PEXELS_API_KEY
+  const env = await readFile(path.resolve(here, '../.env'), 'utf8').catch(() => '')
+  return env.match(/^PEXELS_API_KEY=(.+)$/m)?.[1].trim().replace(/^["']|["']$/g, '')
+}
+
+const key = await loadKey()
+if (!key) {
+  console.error('Missing PEXELS_API_KEY.\n1. Create a free key at https://www.pexels.com/api/\n2. Add this line to frontend/.env:  PEXELS_API_KEY=your-key\n3. Run `npm run images` again.')
+  process.exit(1)
+}
+
+const credits = force ? {} : await readJson(creditsFile)
+const usedIds = new Set(Object.values(credits).map((c) => c.pexelsId)) // one photo is never used twice
+
+async function search(query) {
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&size=large&per_page=15`
+  const res = await fetch(url, { headers: { Authorization: key } })
+  if (res.status === 401) throw new Error('Pexels rejected the API key (401). Check PEXELS_API_KEY.')
+  if (res.status === 429) throw new Error('Pexels rate limit reached (429). Wait a while and run the command again; finished photos are kept.')
+  if (!res.ok) throw new Error(`Pexels search failed: HTTP ${res.status}`)
+  return (await res.json()).photos
+}
+
+const YOURS = ['webp', 'jpeg', 'png'] // formats you would supply yourself; the script never touches these
+
+async function fetchOne(item) {
+  // The catalog names slots as .webp, but Pexels serves JPEG: downloads are saved as .jpg.
+  const base = path.join(root, item.folder, item.file.replace(/\.\w+$/, ''))
+  const target = `${base}.jpg`
+  const supplied = (await Promise.all(YOURS.map((ext) => exists(`${base}.${ext}`)))).some(Boolean)
+  if (supplied || (!force && (await exists(target)))) return 'skipped'
+
+  const photos = await search(item.query)
+  const photo = photos.find((p) => !usedIds.has(p.id))
+  if (!photo) throw new Error(`no unused photo found for "${item.query}"`)
+
+  // The image CDN resizes on request, so we only download what the slot needs.
+  const res = await fetch(`${photo.src.original}?auto=compress&cs=tinysrgb&w=${item.width}`)
+  const type = res.headers.get('content-type') ?? ''
+  if (!res.ok || !type.startsWith('image/')) throw new Error(`download failed: HTTP ${res.status}, content-type "${type}"`)
+
+  await mkdir(path.dirname(target), { recursive: true })
+  await writeFile(target, Buffer.from(await res.arrayBuffer()))
+  usedIds.add(photo.id)
+  credits[item.file] = {
+    pexelsId: photo.id,
+    alt: photo.alt || item.alt,
+    photographer: photo.photographer,
+    photographerUrl: photo.photographer_url,
+    pexelsUrl: photo.url,
+    query: item.query,
+  }
+  return 'downloaded'
+}
+
+const results = { downloaded: 0, skipped: 0 }
+const failed = []
+let fatal = null
+
+for (const item of catalog) {
+  try {
+    const outcome = await fetchOne(item)
+    results[outcome] += 1
+    console.log(`${outcome === 'downloaded' ? '✓' : '·'} ${item.folder}/${item.file}`)
+  } catch (err) {
+    failed.push(item)
+    console.error(`✗ ${item.folder}/${item.file}: ${err.message}`)
+    if (/401|429/.test(err.message)) {
+      fatal = err
+      break // no point continuing with a bad key or an exhausted limit
+    }
+  }
+}
+
+await writeFile(creditsFile, `${JSON.stringify(credits, null, 2)}\n`)
+const lines = catalog
+  .filter((item) => credits[item.file])
+  .map((item) => {
+    const c = credits[item.file]
+    return `- \`${item.folder}/${item.file}\`: [photo](${c.pexelsUrl}) by [${c.photographer}](${c.photographerUrl}) on [Pexels](https://www.pexels.com)`
+  })
+await writeFile(path.join(root, 'CREDITS.md'), `# Photo credits\n\nPhotos are from [Pexels](https://www.pexels.com) and used under the [Pexels License](https://www.pexels.com/license/). Generated by \`npm run images\`.\n\n${lines.join('\n')}\n`)
+
+console.log(`\n${results.downloaded} downloaded, ${results.skipped} already present, ${failed.length} failed`)
+if (failed.length) {
+  console.error('Failed photos keep using the generated placeholder. Fix the problem above and re-run to retry.')
+  process.exit(fatal ? 2 : 1)
+}

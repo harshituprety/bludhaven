@@ -1,0 +1,261 @@
+.details {
+  padding-block: var(--space-5) var(--space-8);
+}
+
+.details__crumbs {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.details__crumbs a:hover {
+  color: var(--ink);
+}
+
+.details__head {
+  margin-bottom: var(--space-4);
+}
+
+.details__head h1 {
+  font-size: var(--text-3xl);
+}
+
+.details__sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.details__loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-soft);
+}
+
+.details__actions {
+  display: flex;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.details__actions .link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+
+.details__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+  align-items: start;
+}
+
+.details__block {
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.details__block:first-child {
+  padding-top: 0;
+}
+
+.details__block:last-child {
+  border-bottom: 0;
+}
+
+.details__block h2 {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-xl);
+}
+
+.details__block .btn {
+  margin-top: var(--space-4);
+}
+
+.details__desc {
+  max-width: 62ch;
+  color: var(--ink-soft);
+  font-size: var(--text-lg);
+}
+
+.details__reviews {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-soft);
+}
+
+.facts svg {
+  color: var(--lagoon-700);
+}
+
+.host {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.host h2 {
+  margin-bottom: 0;
+}
+
+.host p {
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.host__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--lagoon-700);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.host__badge {
+  margin-left: auto;
+}
+
+/* Booking card */
+.booking {
+  position: sticky;
+  top: calc(var(--nav-h) + var(--space-4));
+}
+
+.booking__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-md);
+}
+
+.booking__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Date + guest fields reuse search-field styles inside a bordered box */
+.booking .search-field {
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.booking__note {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.booking__lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.booking__lines div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.booking__lines dt {
+  color: var(--ink-soft);
+}
+
+.booking__lines dd {
+  margin: 0;
+}
+
+.booking__total {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.booking__total dt {
+  color: var(--ink);
+}
+
+.details__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-5);
+}
+
+.reserve-bar {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .details__layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .booking {
+    position: static;
+  }
+
+  .reserve-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--gutter);
+    background: var(--white);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 16px rgb(18 34 45 / 8%);
+  }
+
+  .details {
+    padding-bottom: 6rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .details__actions {
+    margin-left: 0;
+  }
+
+  .host {
+    flex-wrap: wrap;
+  }
+
+  .host__badge {
+    margin-left: 0;
+  }
+}

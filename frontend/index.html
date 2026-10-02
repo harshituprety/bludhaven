@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Find and book vacation homes, cabins and villas directly from local hosts across India." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="%SITE_URL%/" />
+    <meta name="theme-color" content="#0e5a63" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Apply the saved (or system) theme before first paint so there is no light flash in dark mode.
+      // Keep in sync with src/utils/theme.js.
+      try {
+        var saved = localStorage.getItem('bludhaven-theme')
+        var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (dark) document.documentElement.classList.add('dark')
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Blüdhaven – Vacation homes worth the trip</title>
+
+    <!-- Defaults for crawlers and link previews that don't run JavaScript; Seo.jsx updates these per page. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Blüdhaven" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:title" content="Blüdhaven – Vacation homes worth the trip" />
+    <meta property="og:description" content="Find and book vacation homes, cabins and villas directly from local hosts across India." />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Blüdhaven – Vacation homes worth the trip" />
+    <meta name="twitter:description" content="Find and book vacation homes, cabins and villas directly from local hosts across India." />
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

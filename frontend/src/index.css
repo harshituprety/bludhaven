@@ -1,0 +1,174 @@
+@import 'tailwindcss';
+
+/* Design tokens. Each --color-*, --font-*, --text-*, --radius-*, --shadow-* and
+   --animate-* variable below becomes a Tailwind utility (bg-lagoon-700,
+   font-display, text-hero, rounded-card, shadow-card, animate-shimmer, ...). */
+@theme {
+  --font-sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+
+  /* Fixed brand colours (same in both themes). */
+  --color-lagoon-600: #12707b;
+  --color-lagoon-700: #0e5a63;
+  --color-lagoon-900: #07343a;
+  --color-marigold: #f2b138;
+  --color-marigold-600: #d9921a;
+  --color-berry: #b4325a;
+
+  --text-hero: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
+  --text-hero--line-height: 1.02;
+  --text-display: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  --text-display--line-height: 1.1;
+
+  --radius-card: 14px;
+  --radius-panel: 22px;
+
+  --shadow-soft: 0 1px 2px rgb(18 34 45 / 8%), 0 1px 1px rgb(18 34 45 / 4%);
+  --shadow-card: 0 6px 18px -4px rgb(18 34 45 / 14%);
+  --shadow-float: 0 24px 48px -16px rgb(7 52 58 / 32%);
+
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-dialog-in: dialog-in 0.18s ease-out;
+
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+  }
+}
+
+/* Themed colours. Utilities (bg-surface, text-ink, border-line, ...) point at the
+   runtime variables below, so one class works in light and dark mode. The dark
+   values are applied by the "dark" class on <html>, set before first paint by
+   the inline script in index.html and toggled by ThemeProvider. */
+@theme inline {
+  --color-surface: var(--c-surface);
+  --color-mist: var(--c-mist);
+  --color-line: var(--c-line);
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-ink-faint: var(--c-ink-faint);
+  --color-primary: var(--c-primary);
+  --color-primary-strong: var(--c-primary-strong);
+  --color-brand: var(--c-brand);
+  --color-tint: var(--c-tint);
+  --color-tint-strong: var(--c-tint-strong);
+  --color-success: var(--c-success);
+  --color-danger: var(--c-danger);
+}
+
+:root {
+  color-scheme: light;
+  --c-surface: #ffffff;
+  --c-mist: #f3f7f8;
+  --c-line: #dbe4e7;
+  --c-ink: #12222d;
+  --c-ink-soft: #4a5b66;
+  --c-ink-faint: #5d6c76;
+  --c-primary: #0e5a63; /* fills that carry white text */
+  --c-primary-strong: #07343a; /* hover state of primary */
+  --c-brand: #0e5a63; /* brand-coloured text and icons */
+  --c-tint: #eef6f6;
+  --c-tint-strong: #d9ecee;
+  --c-success: #1c7c54;
+  --c-danger: #b3261e;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --c-surface: #0e1a20;
+  --c-mist: #15242c;
+  --c-line: #2a3f4a;
+  --c-ink: #e8f0f3;
+  --c-ink-soft: #a8bac3;
+  --c-ink-faint: #8a9ca6;
+  --c-primary: #12707b;
+  --c-primary-strong: #0e5a63;
+  --c-brand: #5cc4cf;
+  --c-tint: #143039;
+  --c-tint-strong: #1d4854;
+  --c-success: #4cc38a;
+  --c-danger: #ff8f85;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Anchor jumps stop below the sticky header (h-17 = 4.25rem) instead of under it. */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface font-sans text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display leading-[1.15] font-bold tracking-tight text-balance;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Visible keyboard focus everywhere. */
+  :focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--color-marigold) 85%, transparent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Short colour cross-fade while switching theme. ThemeProvider adds this class
+   to <html> for ~300ms around the switch, so normal hover transitions are untouched. */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching ::before,
+html.theme-switching ::after {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    fill 0.25s ease !important;
+}
+
+/* Centred page column with a fluid gutter. Used on nearly every section, so it
+   is a named utility instead of a repeated class string. */
+@utility page-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+
+  /* Large desktop displays get a slightly wider column. */
+  @media (min-width: 1700px) {
+    max-width: 1360px;
+  }
+}
