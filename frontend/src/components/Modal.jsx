@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { cx } from '../utils/ui'
+import { getLenis } from '../utils/lenis'
 
 const sizes = {
   md: 'w-[min(560px,calc(100vw-2rem))]',
@@ -21,8 +22,10 @@ export default function Modal({ open, onClose, title, size = 'md', children }) {
     if (open && !dialog.open) dialog.showModal()
     if (!open && dialog.open) dialog.close()
     document.body.style.overflow = open ? 'hidden' : ''
+    if (open) getLenis()?.stop()
     return () => {
       document.body.style.overflow = ''
+      getLenis()?.start()
     }
   }, [open])
 
@@ -46,7 +49,7 @@ export default function Modal({ open, onClose, title, size = 'md', children }) {
               <X size={20} />
             </button>
           </header>
-          <div className="overflow-y-auto p-6">{children}</div>
+          <div data-lenis-prevent className="overflow-y-auto p-6">{children}</div>
         </div>
       )}
     </dialog>

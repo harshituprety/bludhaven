@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import Img from './Img'
 import { ChevronLeft, ChevronRight, Images } from 'lucide-react'
 import Button from './Button'
 import Modal from './Modal'
@@ -49,12 +50,11 @@ export default function ImageGallery({ images, title }) {
             aria-label={`Open photo ${i + 1} of ${images.length}`}
             className={cx('overflow-hidden bg-mist p-0', tilePlacement[i])}
           >
-            <img
+            <Img
               src={img.src}
               alt={`${title}: ${img.alt}`}
-              loading={i === 0 ? 'eager' : 'lazy'}
-              decoding="async"
-              className="size-full object-cover transition duration-400 hover:scale-105 hover:brightness-95"
+              eager={i === 0}
+              className="size-full object-cover transition duration-700 hover:scale-105 hover:brightness-95"
             />
           </button>
         ))}
@@ -73,12 +73,11 @@ export default function ImageGallery({ images, title }) {
           className="flex snap-x snap-mandatory overflow-x-auto rounded-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {images.map((img, i) => (
-            <img
+            <Img
               key={img.src}
               src={img.src}
               alt={`${title}: ${img.alt}`}
-              loading={i === 0 ? 'eager' : 'lazy'}
-              decoding="async"
+              eager={i === 0}
               className="aspect-4/3 flex-[0_0_100%] snap-center object-cover"
             />
           ))}

@@ -1,3 +1,4 @@
+import useHoverMotion from '../hooks/useHoverMotion'
 import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import Logo from '../components/Logo'
@@ -9,6 +10,7 @@ import { bannerImages } from '../assets/images'
 const art = bannerImages.authLakeMountains.src
 
 export default function AuthLayout() {
+  useHoverMotion()
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <aside
@@ -18,7 +20,7 @@ export default function AuthLayout() {
         <div className="relative flex h-full flex-col justify-between gap-6">
           <Logo light />
           <p className="max-w-[28ch] font-display text-display font-bold">
-            Wake up somewhere new. Book direct with local hosts, or open your own place to guests.
+            Wake up somewhere new.
           </p>
         </div>
       </aside>

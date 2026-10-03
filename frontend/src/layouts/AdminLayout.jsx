@@ -1,3 +1,4 @@
+import useHoverMotion from '../hooks/useHoverMotion'
 import { Suspense } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { BedDouble, CalendarCheck, IndianRupee, LayoutDashboard, Users } from 'lucide-react'
@@ -20,6 +21,7 @@ const item = 'flex items-center gap-3 rounded-card px-3.5 py-2.5 font-semibold w
 
 // Future: wrap this layout in a role guard so only ROLES.ADMIN can enter.
 export default function AdminLayout() {
+  useHoverMotion()
   return (
     <div className="min-h-screen bg-mist md:grid md:grid-cols-[250px_minmax(0,1fr)]">
       <aside className="flex flex-wrap items-center gap-x-5 gap-y-3 bg-lagoon-900 px-4 py-3 text-white/80 sm:px-8 md:sticky md:top-0 md:h-screen md:flex-col md:flex-nowrap md:items-stretch md:gap-6 md:self-start md:p-5">

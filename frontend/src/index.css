@@ -1,11 +1,44 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/figtree/index.css';
+@import '@fontsource/pinyon-script/latin-400.css';
 
 /* Design tokens. Each --color-*, --font-*, --text-*, --radius-*, --shadow-* and
    --animate-* variable below becomes a Tailwind utility (bg-lagoon-700,
    font-display, text-hero, rounded-card, shadow-card, animate-shimmer, ...). */
+/* Circular is licensed: add the files to public/fonts (see the README there). */
+@font-face {
+  font-family: 'Circular';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Circular Book'), local('CircularXX-Book'), url('/fonts/CircularXX-Book.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Circular';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Circular Medium'), local('CircularXX-Medium'), url('/fonts/CircularXX-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Circular';
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: local('Circular Bold'), local('CircularXX-Bold'), url('/fonts/CircularXX-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Circular';
+  font-style: normal;
+  font-weight: 800 900;
+  font-display: swap;
+  src: local('Circular Black'), local('CircularXX-Black'), url('/fonts/CircularXX-Black.woff2') format('woff2');
+}
+
 @theme {
-  --font-sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  --font-sans: 'Circular', 'Circular Std', 'CircularXX', 'Figtree Variable', 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-sans);
+  --font-script: 'Pinyon Script', 'Snell Roundhand', cursive;
 
   /* Fixed brand colours (same in both themes). */
   --color-lagoon-600: #12707b;
@@ -17,8 +50,11 @@
 
   --text-hero: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
   --text-hero--line-height: 1.02;
+  --text-hero--letter-spacing: -0.035em;
   --text-display: clamp(2rem, 1.4rem + 2.4vw, 3rem);
-  --text-display--line-height: 1.1;
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 800;
 
   --radius-card: 14px;
   --radius-panel: 22px;
@@ -27,12 +63,23 @@
   --shadow-card: 0 6px 18px -4px rgb(18 34 45 / 14%);
   --shadow-float: 0 24px 48px -16px rgb(7 52 58 / 32%);
 
-  --animate-shimmer: shimmer 1.4s linear infinite;
+  /* Slower, smoother hover/state transitions site-wide (applies to every `transition` utility). */
+  --default-transition-duration: 450ms;
+  --default-transition-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+
+  --animate-shimmer: shimmer 2s ease-in-out infinite;
+  --animate-page-in: page-in 0.5s ease-out;
   --animate-dialog-in: dialog-in 0.18s ease-out;
 
   @keyframes shimmer {
     to {
       background-position: -200% 0;
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
     }
   }
 
@@ -79,6 +126,8 @@
   --c-tint-strong: #d9ecee;
   --c-success: #1c7c54;
   --c-danger: #b3261e;
+  --c-skel-a: #e8eef0; /* skeleton base */
+  --c-skel-b: #f2f6f7; /* skeleton shimmer highlight */
 }
 
 :root.dark {
@@ -96,18 +145,32 @@
   --c-tint-strong: #1d4854;
   --c-success: #4cc38a;
   --c-danger: #ff8f85;
+  --c-skel-a: #182a33;
+  --c-skel-b: #213843;
 }
 
 @layer base {
   html {
-    scroll-behavior: smooth;
-    /* Anchor jumps stop below the sticky header (h-17 = 4.25rem) instead of under it. */
+    /* Smooth scrolling is done by Lenis (hooks/useSmoothScroll.js); CSS scroll-behavior would fight it. */
+    /* Anchor jumps stop below the sticky header (h-20 = 5rem) instead of under it. */
     scroll-padding-top: 5rem;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply bg-surface font-sans text-ink antialiased;
+    text-rendering: optimizeLegibility;
+    font-optical-sizing: auto;
+  }
+
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-marigold) 55%, transparent);
+    color: var(--color-ink);
   }
 
   h1,
@@ -131,19 +194,43 @@
     outline-offset: 2px;
   }
 
+  /* Reduced motion: animations and transitions are cut short, except the slow zoom on a card's
+     photo (a single image scaling ~5% under the pointer, no travel). Smooth scrolling is off. */
   @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-
     *,
     ::before,
     ::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
+    }
+
+    *:not(img),
+    ::before,
+    ::after {
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* Lenis (smooth scroll) housekeeping, from its docs. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* Elements animated by GSAP on hover (see hooks/useHoverMotion.js) keep their colour
+   transitions but not CSS transform ones, which would lag behind the tween. */
+[data-motion] {
+  transition-property: color, background-color, border-color, opacity, text-decoration-color;
 }
 
 /* Short colour cross-fade while switching theme. ThemeProvider adds this class
@@ -157,6 +244,32 @@ html.theme-switching ::after {
     color 0.25s ease,
     border-color 0.25s ease,
     fill 0.25s ease !important;
+}
+
+/* Loading: an image that has not arrived yet shows a soft shimmer; when it does, it fades in
+   from a light blur instead of popping. Img.jsx sets data-loaded. */
+img[data-loaded='false'] {
+  background: linear-gradient(90deg, var(--c-skel-a) 25%, var(--c-skel-b) 50%, var(--c-skel-a) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  color: transparent; /* hides alt text flash */
+}
+img[data-loaded='true'] {
+  animation: img-in 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes img-in {
+  from {
+    opacity: 0;
+    filter: blur(14px) saturate(0.8);
+  }
+}
+
+/* Skeleton block (YouTube-style): soft grey with a slow, low-contrast shimmer sweeping across.
+   Use on an empty element sized like the thing it stands in for. */
+@utility skeleton {
+  background: linear-gradient(90deg, var(--c-skel-a) 25%, var(--c-skel-b) 50%, var(--c-skel-a) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* Centred page column with a fluid gutter. Used on nearly every section, so it

@@ -1,26 +1,19 @@
-// Animated grey bar used by every skeleton block.
-const SHIMMER =
-  'animate-shimmer bg-[linear-gradient(90deg,var(--color-mist)_25%,#e4edef_50%,var(--color-mist)_75%)] bg-size-[200%_100%]'
+import { PropertyGridSkeleton } from './Skeletons'
 
-/** Skeleton placeholder. `variant="cards"` mimics a property grid. */
+/** Generic skeleton: title block over a card grid. Used when a page has no skeleton of its own. */
 export default function LoadingState({ variant = 'page', count = 4, label = 'Loading' }) {
-  if (variant === 'cards') {
-    return (
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-6" role="status" aria-label={label}>
-        {Array.from({ length: count }, (_, i) => (
-          <div key={i} className="space-y-3">
-            <div className={`aspect-4/3 rounded-card ${SHIMMER}`} />
-            <div className={`h-3.5 rounded-lg ${SHIMMER}`} />
-            <div className={`h-3.5 w-3/5 rounded-lg ${SHIMMER}`} />
-          </div>
-        ))}
-      </div>
-    )
-  }
+  if (variant === 'cards') return <PropertyGridSkeleton count={count} label={label} />
   return (
-    <div className="flex min-h-[40vh] items-center justify-center gap-3 text-ink-soft" role="status" aria-label={label}>
-      <span aria-hidden="true" className="size-5.5 animate-spin rounded-full border-3 border-tint-strong border-t-primary" />
-      <span>{label}…</span>
+    <div className="page-container pt-14 pb-24" role="status" aria-busy="true" aria-label={label}>
+      <div aria-hidden="true">
+        <div className="skeleton h-3 w-24 rounded-full" />
+        <div className="skeleton mt-5 h-10 w-3/5 max-w-md rounded-xl" />
+        <div className="skeleton mt-4 h-4 w-4/5 max-w-lg rounded-lg" />
+        <div className="mt-12">
+          <PropertyGridSkeleton count={6} />
+        </div>
+      </div>
+      <span className="sr-only">{label}…</span>
     </div>
   )
 }

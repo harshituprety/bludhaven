@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Bath, BedDouble, Heart, Home as HomeIcon, MapPin, Share2, ShieldCheck, Users } from 'lucide-react'
 import ImageGallery from '../components/ImageGallery'
@@ -14,6 +14,7 @@ import Seo from '../components/Seo'
 import { absoluteUrl } from '../config/site'
 import { getPropertyById } from '../data/properties'
 import { formatPrice, nightsBetween, pluralize } from '../utils/format'
+import useScrollReveal from '../hooks/useScrollReveal'
 import { inputClass, linkButtonClass } from '../utils/ui'
 
 const CLEANING_FEE = 800
@@ -41,6 +42,8 @@ export default function PropertyDetails() {
   const [amenitiesOpen, setAmenitiesOpen] = useState(false)
   const [reserveOpen, setReserveOpen] = useState(false)
   const [saved, setSaved] = useState(false)
+  const rootRef = useRef(null)
+  useScrollReveal(rootRef, [id]) // before the early return below: hooks must run on every render
 
   if (!property) {
     return (
@@ -100,7 +103,7 @@ export default function PropertyDetails() {
   }
 
   return (
-    <div className="page-container pt-6 pb-24 lg:pb-18">
+    <div ref={rootRef} className="page-container pt-6 pb-24 lg:pb-18">
       <Seo
         title={`${p.title} in ${p.city}`}
         description={metaDescription}
@@ -119,7 +122,7 @@ export default function PropertyDetails() {
         </Link>
       </nav>
 
-      <header className="mb-4">
+      <header data-reveal="heading" className="mb-4">
         <h1 className="text-display">{p.title}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">
           <Rating value={p.rating} count={p.reviews} />
@@ -137,11 +140,13 @@ export default function PropertyDetails() {
         </div>
       </header>
 
-      <ImageGallery images={p.images} title={p.title} />
+      <div data-reveal="image">
+        <ImageGallery images={p.images} title={p.title} />
+      </div>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
         <div>
-          <section className={block}>
+          <section data-reveal="section" className={block}>
             <h2 className={blockTitle}>
               {p.type} hosted by {p.host.name}
             </h2>
@@ -154,7 +159,7 @@ export default function PropertyDetails() {
             </ul>
           </section>
 
-          <section className={`${block} flex flex-wrap items-center gap-4`}>
+          <section data-reveal="section" className={`${block} flex flex-wrap items-center gap-4`}>
             <span aria-hidden="true" className="grid size-14 flex-none place-items-center rounded-full bg-primary font-display font-bold text-white">
               {p.host.name
                 .split(' ')
@@ -174,12 +179,12 @@ export default function PropertyDetails() {
             )}
           </section>
 
-          <section className={block}>
+          <section data-reveal="section" className={block}>
             <h2 className={blockTitle}>About this place</h2>
             <p className="max-w-[62ch] text-lg text-ink-soft">{p.description}</p>
           </section>
 
-          <section className={block}>
+          <section data-reveal="section" className={block}>
             <h2 className={blockTitle}>What this place offers</h2>
             <AmenityList amenities={p.amenities.slice(0, 6)} />
             {p.amenities.length > 6 && (
@@ -189,7 +194,7 @@ export default function PropertyDetails() {
             )}
           </section>
 
-          <section className={block}>
+          <section data-reveal="section" className={block}>
             <h2 className={blockTitle}>Guest reviews</h2>
             <p className="flex items-center gap-2">
               <Rating value={p.rating} size={22} /> from {pluralize(p.reviews, 'review')}
@@ -198,7 +203,7 @@ export default function PropertyDetails() {
         </div>
 
         <aside id="booking" aria-label="Book this stay" className="lg:sticky lg:top-21">
-          <div className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-6 shadow-card">
+          <div data-reveal="section" className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-6 shadow-card">
             <div className="flex items-baseline justify-between gap-3">
               <PriceDisplay amount={p.pricePerNight} size="lg" />
               <Rating value={p.rating} count={p.reviews} />

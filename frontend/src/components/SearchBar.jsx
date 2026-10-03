@@ -36,7 +36,7 @@ export default function SearchBar({ variant = 'hero', initial = {}, className })
       role="search"
       aria-label="Search stays"
       className={cx(
-        'relative grid grid-cols-1 gap-1 rounded-panel bg-surface p-2 sm:grid-cols-2 lg:grid-cols-[1.4fr_1.8fr_1fr_auto]',
+        'relative grid grid-cols-1 gap-1 rounded-panel bg-surface p-2 text-ink sm:grid-cols-2 lg:grid-cols-[1.4fr_1.8fr_1fr_auto]',
         variant === 'hero' ? 'shadow-float' : 'border border-line shadow-soft',
         className,
       )}
@@ -46,6 +46,7 @@ export default function SearchBar({ variant = 'hero', initial = {}, className })
       <GuestSelector value={guests} onChange={setGuests} divider={false} className="sm:order-2 lg:order-none" />
       <button
         type="submit"
+        data-motion="button"
         className="inline-flex items-center justify-center gap-2 rounded-card bg-marigold px-8 py-4 font-bold text-lagoon-900 transition-colors hover:bg-marigold-600 sm:order-4 sm:col-span-2 lg:order-none lg:col-span-1 lg:ml-2 lg:py-0"
       >
         <Search size={20} aria-hidden="true" />

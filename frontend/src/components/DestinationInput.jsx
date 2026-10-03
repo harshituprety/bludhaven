@@ -61,7 +61,7 @@ export default function DestinationInput({ value, onChange }) {
         />
       </div>
       {open && options.length > 0 && (
-        <ul id={listId} role="listbox" className={cx(popoverClass, 'max-h-72 overflow-y-auto')}>
+        <ul id={listId} role="listbox" data-lenis-prevent className={cx(popoverClass, 'max-h-72 overflow-y-auto')}>
           {options.map((d, i) => (
             <li key={d.name} role="option" aria-selected={i === active}>
               <button

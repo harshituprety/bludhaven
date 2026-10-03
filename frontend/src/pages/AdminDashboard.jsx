@@ -1,7 +1,9 @@
+import { useRef } from 'react'
 import { ArrowDownRight, ArrowUpRight, Info } from 'lucide-react'
 import Rating from '../components/Rating'
 import Seo from '../components/Seo'
 import { adminStats, monthlyRevenue, recentActivity, topProperties } from '../data/admin'
+import useScrollReveal from '../hooks/useScrollReveal'
 import { cx } from '../utils/ui'
 
 const maxRevenue = Math.max(...monthlyRevenue.map((m) => m.value))
@@ -9,10 +11,12 @@ const panel = 'rounded-panel bg-surface p-6 shadow-soft'
 const panelTitle = 'mb-4 text-lg'
 
 export default function AdminDashboard() {
+  const rootRef = useRef(null)
+  useScrollReveal(rootRef)
   return (
-    <div className="flex max-w-275 flex-col gap-6">
+    <div ref={rootRef} className="flex max-w-275 flex-col gap-6">
       <Seo title="Admin dashboard" path="/admin" noindex />
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header data-reveal="heading" className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-display">Overview</h1>
           <p className="text-ink-soft">How the marketplace is doing this month.</p>
@@ -22,7 +26,7 @@ export default function AdminDashboard() {
         </p>
       </header>
 
-      <section aria-label="Key figures" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section data-reveal="cards" aria-label="Key figures" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {adminStats.map((s) => {
           const TrendIcon = s.trend === 'up' ? ArrowUpRight : ArrowDownRight
           return (
@@ -39,7 +43,7 @@ export default function AdminDashboard() {
       </section>
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <section aria-labelledby="rev-title" className={panel}>
+        <section data-reveal="section" aria-labelledby="rev-title" className={panel}>
           <h2 id="rev-title" className={panelTitle}>
             Revenue, last 6 months (₹ lakh)
           </h2>
@@ -65,7 +69,7 @@ export default function AdminDashboard() {
           </ol>
         </section>
 
-        <section aria-labelledby="act-title" className={panel}>
+        <section data-reveal="section" aria-labelledby="act-title" className={panel}>
           <h2 id="act-title" className={panelTitle}>
             Recent activity
           </h2>
@@ -85,7 +89,7 @@ export default function AdminDashboard() {
         </section>
       </div>
 
-      <section aria-labelledby="top-title" className={panel}>
+      <section data-reveal="section" aria-labelledby="top-title" className={panel}>
         <h2 id="top-title" className={panelTitle}>
           Top properties
         </h2>

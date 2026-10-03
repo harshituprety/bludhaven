@@ -15,21 +15,21 @@
 |  | `destinations/rishikesh-aerial-river.webp` | 1100px | rishikesh river ganges |
 |  | `destinations/coorg-green-hillside.webp` | 1100px | coorg green hills mist |
 |  | `destinations/delhi-india-gate.webp` | 1100px | india gate new delhi |
-|  | `destinations/jaipur-hawa-mahal.webp` | 1100px | hawa mahal jaipur |
+|  | `destinations/jaipur-city-palace-arch.webp` | 1100px | hawa mahal jaipur |
 |  | `destinations/agra-taj-mahal.webp` | 1100px | taj mahal agra |
 |  | `destinations/varanasi-ganga-ghats.webp` | 1100px | varanasi ghats ganges sunrise |
 |  | `destinations/kolkata-howrah-bridge.webp` | 1100px | howrah bridge kolkata |
-|  | `destinations/chennai-marina-beach.webp` | 1100px | marina beach chennai |
-|  | `destinations/bengaluru-vidhana-soudha.webp` | 1100px | bengaluru vidhana soudha |
-|  | `destinations/hyderabad-charminar.webp` | 1100px | charminar hyderabad |
-|  | `destinations/pondicherry-promenade.webp` | 1100px | pondicherry french quarter street |
-|  | `destinations/kochi-chinese-fishing-nets.webp` | 1100px | chinese fishing nets kochi |
+|  | `destinations/chennai-high-court-domes.webp` | 1100px | marina beach chennai |
+|  | `destinations/bengaluru-palace.webp` | 1100px | bengaluru vidhana soudha |
+|  | `destinations/hyderabad-palace-carriage.webp` | 1100px | charminar hyderabad |
+|  | `destinations/pondicherry-french-quarter.webp` | 1100px | pondicherry french quarter street |
+|  | `destinations/kochi-backwater-houseboats.webp` | 1100px | chinese fishing nets kochi |
 |  | `destinations/alleppey-backwaters.webp` | 1100px | alleppey backwaters kerala |
-|  | `destinations/darjeeling-tea-gardens.webp` | 1100px | darjeeling tea garden himalaya |
+|  | `destinations/darjeeling-toy-train.webp` | 1100px | darjeeling tea garden himalaya |
 |  | `destinations/shimla-snow-hills.webp` | 1100px | shimla snow hill station |
-|  | `destinations/leh-ladakh-pangong.webp` | 1100px | ladakh pangong lake mountains |
+|  | `destinations/leh-palace.webp` | 1100px | ladakh pangong lake mountains |
 |  | `destinations/srinagar-dal-lake.webp` | 1100px | dal lake srinagar shikara |
-|  | `destinations/gangtok-himalaya-view.webp` | 1100px | gangtok sikkim kanchenjunga |
+|  | `destinations/gangtok-tsomgo-lake.webp` | 1100px | gangtok sikkim kanchenjunga |
 |  | `destinations/ooty-nilgiri-hills.webp` | 1100px | ooty nilgiri hills tea |
 |  | `destinations/mysuru-palace-lit.webp` | 1100px | mysore palace illuminated |
 |  | `destinations/amritsar-golden-temple.webp` | 1100px | golden temple amritsar |

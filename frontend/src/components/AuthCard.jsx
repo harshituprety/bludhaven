@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Info } from 'lucide-react'
 import Button from './Button'
+import useScrollReveal from '../hooks/useScrollReveal'
 
 /**
  * Shared shell for the Login and Register screens: heading, form, preview
@@ -9,9 +10,11 @@ import Button from './Button'
  */
 export default function AuthCard({ title, lead, submitLabel, notice, footer, children }) {
   const [submitted, setSubmitted] = useState(false)
+  const ref = useRef(null)
+  useScrollReveal(ref)
 
   return (
-    <div className="w-full max-w-105">
+    <div ref={ref} data-reveal="section" className="w-full max-w-105">
       <h1 className="text-display">{title}</h1>
       <p className="mt-2 mb-8 text-ink-soft">{lead}</p>
 

@@ -6,8 +6,8 @@ const base =
   'whitespace-nowrap no-underline transition active:translate-y-px disabled:opacity-55'
 
 const variants = {
-  primary: 'bg-primary text-white hover:bg-primary-strong',
-  accent: 'bg-marigold text-lagoon-900 hover:bg-marigold-600',
+  primary: 'bg-primary text-white hover:bg-primary-strong hover:shadow-[0_12px_24px_-12px_rgb(7_52_58/0.6)]',
+  accent: 'bg-marigold text-lagoon-900 hover:bg-marigold-600 hover:shadow-[0_12px_24px_-12px_rgb(217_146_26/0.7)]',
   secondary: 'border-line bg-surface text-ink hover:border-ink',
   ghost: 'text-ink hover:bg-mist',
 }
@@ -23,13 +23,13 @@ export default function Button({ to, variant = 'primary', size = 'md', block = f
   const classes = cx(base, variants[variant], sizes[size], block && 'w-full', className)
   if (to) {
     return (
-      <Link to={to} className={classes} {...rest}>
+      <Link to={to} className={classes} data-motion="button" {...rest}>
         {children}
       </Link>
     )
   }
   return (
-    <button type={type} className={classes} {...rest}>
+    <button type={type} className={classes} data-motion="button" {...rest}>
       {children}
     </button>
   )

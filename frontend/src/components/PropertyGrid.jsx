@@ -1,37 +1,34 @@
 import { useRef } from 'react'
 import PropertyCard from './PropertyCard'
-import { MOTION_OK, gsap, useGSAP } from '../utils/gsap'
-import { ScrollTrigger } from '../utils/scrollTrigger'
+import { PROPERTY_GRID, PropertyGridSkeleton } from './Skeletons'
+import { useGSAP } from '../utils/gsap'
+import { revealMedia } from '../utils/reveal'
 
 /**
- * Responsive card grid. Cards fade up in small batches as they scroll into view.
+ * Responsive card grid. Each row of cards reveals as it reaches 80% of the viewport and
+ * reverses when scrolled back above it (see utils/reveal.js, `batch`).
  * `headingLevel` is the card title's heading tag; pass "h2" when the page title is an h1.
  */
-export default function PropertyGrid({ properties, headingLevel }) {
+export default function PropertyGrid({ properties, headingLevel, loading = false }) {
   const gridRef = useRef(null)
 
+  // Rebuilt when the list changes (filtering, sorting) so new cards get their own triggers.
   useGSAP(
     () => {
-      const mm = gsap.matchMedia()
-      mm.add(MOTION_OK, () => {
-        const items = gsap.utils.toArray('[data-reveal]')
-        gsap.set(items, { autoAlpha: 0, y: 24 })
-        ScrollTrigger.batch(items, {
-          start: 'top 92%',
-          once: true,
-          onEnter: (batch) =>
-            gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.08, overwrite: true }),
-        })
-      })
+      if (!gridRef.current) return undefined
+      const mm = revealMedia((reveal) => reveal.batch(gridRef.current.children))
       return () => mm.revert()
     },
-    { scope: gridRef, dependencies: [properties], revertOnUpdate: true },
+    { scope: gridRef, dependencies: [properties, loading], revertOnUpdate: true },
   )
 
+  // `loading` is for when stays come from an API: skeleton cards, same grid, until the data is here.
+  if (loading) return <PropertyGridSkeleton count={8} />
+
   return (
-    <div ref={gridRef} className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-6">
+    <div ref={gridRef} className={PROPERTY_GRID}>
       {properties.map((p) => (
-        <div key={p.id} data-reveal>
+        <div key={p.id}>
           <PropertyCard property={p} headingLevel={headingLevel} />
         </div>
       ))}
