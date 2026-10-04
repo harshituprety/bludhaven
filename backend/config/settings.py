@@ -6,8 +6,10 @@ Application logic lives in ``apps/``; this module only wires things together.
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +20,14 @@ load_dotenv(BASE_DIR / ".env")
 def env_list(name: str, default: str = "") -> list[str]:
     """Read a comma-separated environment variable into a clean list."""
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+
+
+def env_required(name: str) -> str:
+    """Read a variable that must be set; fail loudly at startup instead of running misconfigured."""
+    value = os.getenv(name)
+    if value is None or value == "":
+        raise ImproperlyConfigured(f"Environment variable {name} is required (see backend/.env.example).")
+    return value
 
 
 # --- Core ---------------------------------------------------------------------
@@ -37,10 +47,18 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third party
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     # Local apps
+    "apps.accounts",
     "apps.core",
+    "apps.catalog",
+    "apps.bookings",
+    "apps.billing",
 ]
+
+# Custom user (email login, database-backed role). Must be set before the first migration.
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -75,15 +93,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # --- Database -----------------------------------------------------------------
-# SQLite for the current development phase: zero setup, file lives at
-# backend/db.sqlite3 (git-ignored). Everything else in the project talks to the
-# database through the Django ORM only, so switching to PostgreSQL later means
-# changing just this block (plus adding the driver dependency at that point).
+# MySQL 8, configured only through environment variables (no credentials in code).
+# Everything talks to it through the Django ORM.
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env_required("DB_NAME"),
+        "USER": env_required("DB_USER"),
+        "PASSWORD": env_required("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", "3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            # Optional TLS to a managed MySQL: path to the provider's CA certificate.
+            **({"ssl": {"ca": os.environ["DB_SSL_CA"]}} if os.getenv("DB_SSL_CA") else {}),
+        },
+        "TEST": {"CHARSET": "utf8mb4"},
     }
 }
 
@@ -115,9 +142,24 @@ REST_FRAMEWORK = {
     # JSON only for now; the React app is the sole consumer.
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
-    # Authentication / permissions are added in a later phase.
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    # Secure by default: every endpoint needs a valid JWT unless it explicitly opts out
+    # (see apps/core/views.py health, and SimpleJWT's login/refresh views).
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+}
+
+# --- JWT (djangorestframework-simplejwt) --------------------------------------
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.getenv("JWT_ACCESS_TOKEN_MINUTES", "15"))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv("JWT_REFRESH_TOKEN_DAYS", "7"))),
+    # Each refresh issues a new refresh token and blacklists the old one (token_blacklist app).
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": os.getenv("JWT_SIGNING_KEY") or SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 # --- CORS ---------------------------------------------------------------------

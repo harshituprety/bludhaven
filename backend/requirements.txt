@@ -1,4 +1,8 @@
 Django>=5.2,<5.3
 djangorestframework>=3.16
+djangorestframework-simplejwt>=5.5
 django-cors-headers>=4.7
 python-dotenv>=1.0
+# MySQL driver. Needs the MySQL client libraries and a C compiler at install time:
+#   Debian/Ubuntu: sudo apt install libmysqlclient-dev pkg-config build-essential
+mysqlclient>=2.2
