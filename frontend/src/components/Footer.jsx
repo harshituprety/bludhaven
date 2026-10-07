@@ -19,8 +19,8 @@ const columns = [
   {
     title: 'Hosting',
     links: [
-      { to: '/register', label: 'Become a host' },
-      { to: '/register', label: 'List your home' },
+      { to: '/plans', label: 'Become a host' },
+      { to: '/plans', label: 'Host plans' },
     ],
   },
   {
@@ -28,7 +28,6 @@ const columns = [
     links: [
       { to: '/login', label: 'Log in' },
       { to: '/register', label: 'Sign up' },
-      { to: '/admin', label: 'Admin dashboard (preview)' },
     ],
   },
 ]

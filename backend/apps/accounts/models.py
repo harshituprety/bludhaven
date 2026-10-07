@@ -42,7 +42,9 @@ class UserManager(BaseUserManager):
         return self._build(email, password, **extra)
 
     def create_superuser(self, email, password=None, **extra):
+        # Created by an operator on the server, never by the public API, so the address is trusted.
         extra.update(role=Role.SUPER_ADMIN, is_staff=True, is_superuser=True)
+        extra.setdefault("email_verified_at", timezone.now())
         return self._build(email, password, **extra)
 
 
@@ -54,6 +56,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Django admin access. Only Super Admins may be staff (enforced by a constraint below).
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    # Set only by the server when the owner of the address opens the emailed link (verify-email
+    # endpoint). Never writable through the API.
+    email_verified_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     objects = UserManager()
 
@@ -71,6 +76,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    @property
+    def is_email_verified(self):
+        return self.email_verified_at is not None
 
     @property
     def is_super_admin(self):

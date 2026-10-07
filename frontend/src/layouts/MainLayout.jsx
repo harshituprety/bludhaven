@@ -10,6 +10,7 @@ import Footer from '../components/Footer'
 import RouteSkeleton from '../components/RouteSkeleton'
 import PageTransition from '../components/PageTransition'
 import ScrollProgress from '../components/ScrollProgress'
+import VerifyEmailBanner from '../components/VerifyEmailBanner'
 
 export default function MainLayout() {
   useHoverMotion()
@@ -45,6 +46,7 @@ export default function MainLayout() {
       </a>
       <ScrollProgress />
       <Navbar />
+      <VerifyEmailBanner />
       <main id="main">
         <PageTransition>
           <Suspense fallback={<RouteSkeleton />}>

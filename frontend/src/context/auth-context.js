@@ -1,6 +1,17 @@
 import { createContext } from 'react'
 import { ROLES } from '../utils/roles'
 
-// Placeholder for the auth phase: everyone is a signed-out guest. Once real
-// authentication exists, the provider will hold the user and their role.
-export const AuthContext = createContext({ user: null, role: ROLES.GUEST })
+// status: 'loading' (restoring a session) | 'authenticated' | 'anonymous'
+export const AuthContext = createContext({
+  status: 'anonymous',
+  user: null,
+  role: ROLES.GUEST,
+  isAuthenticated: false,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+  refreshUser: async () => {},
+  updateProfile: async () => {},
+  changePassword: async () => {},
+  clearSession: () => {},
+})

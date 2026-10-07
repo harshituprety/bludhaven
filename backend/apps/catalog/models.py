@@ -92,8 +92,15 @@ class PropertyImage(models.Model):
 
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
     url = models.URLField(max_length=500)
-    # Provider reference (e.g. Cloudinary public_id / S3 key), needed later to delete the file.
+    # Cloudinary public ID (random, under <root>/hosts/<host id>/properties/<property id>/), needed to delete the file.
+    # Blank only on rows created before uploads existed.
     storage_key = models.CharField(max_length=255, blank=True)
+    # Facts about the stored file, read from it at upload. The file itself is never kept in the database.
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
+    size_bytes = models.PositiveIntegerField(null=True, blank=True)
+    format = models.CharField(max_length=10, blank=True, help_text="jpg, png or webp.")
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     alt_text = models.CharField(max_length=200, blank=True)
     position = models.PositiveSmallIntegerField(default=0, help_text="0 is the cover photo.")
     created_at = models.DateTimeField(auto_now_add=True)

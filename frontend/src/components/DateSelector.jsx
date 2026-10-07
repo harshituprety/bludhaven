@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { CalendarDays } from 'lucide-react'
 import useClickOutside from '../hooks/useClickOutside'
+import Button from './Button'
 import { formatShortDate, nightsBetween, pluralize } from '../utils/format'
 import { cx } from '../utils/ui'
 import Calendar from './Calendar'
@@ -10,8 +11,10 @@ import SearchField, { controlClass, popoverClass } from './SearchField'
  * Check-in / check-out with a custom range calendar (no native date inputs).
  * Clicking the field opens the calendar; picking check-in then check-out closes it.
  * variant "boxed" (booking panel) shows one month aligned to the right edge.
+ * `availability` ({ blocked, maxNights, loading, error, onRetry }) marks taken nights in the calendar; while it loads
+ * or fails the calendar stays usable (the server still has the last word when booking).
  */
-export default function DateSelector({ checkIn, checkOut, onChange, className, divider, variant }) {
+export default function DateSelector({ checkIn, checkOut, onChange, className, divider, variant, availability }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const id = useId()
@@ -64,7 +67,37 @@ export default function DateSelector({ checkIn, checkOut, onChange, className, d
             boxed ? 'right-0 left-auto w-[min(22rem,calc(100vw-2rem))] sm:min-w-0' : 'sm:left-1/2 sm:w-160 sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2',
           )}
         >
-          <Calendar checkIn={checkIn} checkOut={checkOut} onSelect={select} months={boxed ? 1 : 2} autoFocus />
+          <Calendar
+            checkIn={checkIn}
+            checkOut={checkOut}
+            onSelect={select}
+            months={boxed ? 1 : 2}
+            autoFocus
+            blocked={availability?.blocked}
+            maxNights={availability?.maxNights}
+          />
+          {availability && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-ink-soft">
+              {availability.error ? (
+                <span role="status" className="flex flex-wrap items-center gap-2">
+                  Couldn’t check availability. You can still try to book.
+                  <Button variant="secondary" size="sm" onClick={availability.onRetry}>
+                    Retry
+                  </Button>
+                </span>
+              ) : availability.loading ? (
+                <span role="status">Checking availability…</span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <span aria-hidden="true" className="font-medium text-ink-faint line-through opacity-60">
+                    12
+                  </span>
+                  Unavailable
+                </span>
+              )}
+              {availability.maxNights ? <span>Up to {pluralize(availability.maxNights, 'night')}</span> : null}
+            </div>
+          )}
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3 text-sm">
             <span aria-live="polite" className="text-ink-soft">
               {nights ? pluralize(nights, 'night') : checkIn ? 'Now choose check-out' : 'Choose check-in'}

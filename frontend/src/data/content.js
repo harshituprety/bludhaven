@@ -1,77 +1,70 @@
-// Sample marketing copy for the home page. Replace with real guest reviews and
-// your own policies before launch; the names below are fictional.
+// Static copy for the home page. Every statement here describes how the platform actually behaves
+// (see backend/docs/API.md); there are no invented figures, people or quotes.
 
-export const testimonials = [
+// EXAMPLE guest stories for the home page (components/Testimonials.jsx). They are illustrative sample wording, NOT real
+// reviews: no names, no places, no ratings, and the section says so. Real reviews come from the API.
+export const exampleTestimonials = [
   {
-    id: 't1',
-    name: 'Ananya Rao',
-    trip: 'Stayed in Munnar',
-    rating: 5,
+    id: 'e1',
     featured: true,
     quote:
-      'We woke up to mist rolling over the tea terraces. The host left a hand-drawn map of walks nearby, and check-in took two minutes. It felt less like booking a room and more like being welcomed into someone\u2019s home.',
+      'A friendly note from a guest might go here: how easy it was to find the place, how well the host had prepared it, and what made the stay feel like a proper break.',
+  },
+  { id: 'e2', quote: 'A short remark about a home matching its photos and a price that was clear from the start.' },
+  { id: 'e3', quote: 'A line about a quiet spot, a helpful host and the small touches a guest noticed.' },
+  { id: 'e4', tint: true, quote: 'A comment about a comfortable bed, a well-equipped kitchen and a calm evening.' },
+  { id: 'e5', quote: 'A few words about a smooth check-in and a host who answered questions quickly.' },
+  { id: 'e6', quote: 'A closing thought about a stay worth repeating.' },
+]
+
+export const highlights = [
+  {
+    id: 'price',
+    icon: 'receipt',
+    title: 'The price you see is the price you pay',
+    featured: true,
+    text: 'Your total is worked out by our server from the number of nights and the nightly price at the moment you book. If a host changes the price later, your booking stays as it was.',
   },
   {
-    id: 't2',
-    name: 'Kabir Malhotra',
-    trip: 'Stayed in Udaipur',
-    rating: 5,
-    quote: 'Exactly like the photos, which is rare. Prices were clear up front, so there were no surprises at checkout.',
+    id: 'verified',
+    icon: 'mail',
+    title: 'Bookings need a verified email',
+    text: 'Only guests who have confirmed their email address can book, so hosts know who is on the other end.',
   },
   {
-    id: 't3',
-    name: 'Meera Iyer',
-    trip: 'Stayed in Goa',
-    rating: 4,
-    quote: 'A quiet villa a short walk from the beach. Our host recommended the best fish thali in town.',
-  },
-  {
-    id: 't4',
-    name: 'Rohan Bhatt',
-    trip: 'Stayed in Manali',
-    rating: 5,
+    id: 'reviews',
+    icon: 'star',
+    title: 'Reviews from real stays',
     tint: true,
-    quote: 'The fireplace and the pine-forest view made the cold completely worth it.',
+    text: 'Only the guest of a completed stay can leave a review, and only one per booking.',
   },
   {
-    id: 't5',
-    name: 'Sneha Pillai',
-    trip: 'Stayed in Alleppey',
-    rating: 5,
-    quote: 'Breakfast on the houseboat deck, with the backwaters drifting past. We extended our stay by two nights.',
-  },
-  {
-    id: 't6',
-    name: 'Imran Qureshi',
-    trip: 'Stayed in Jaisalmer',
-    rating: 5,
-    quote: 'Sunset on the rooftop looking at the fort was the highlight of our whole trip.',
+    id: 'hosts',
+    icon: 'badge',
+    title: 'Hosts are invited by our team',
+    text: 'Host accounts are set up by the Blüdhaven team, not self-registered, so every listing comes from a host we have brought on ourselves.',
   },
 ]
 
 export const faqs = [
   {
     q: 'How do I book a stay on Blüdhaven?',
-    a: 'Search by destination, dates and guests, open a stay you like and choose your dates in the booking panel. You will see the nightly price, cleaning fee and service fee before you commit.',
+    a: 'Search by destination, dates and guests, open a stay you like and choose your dates in the booking panel. You need a guest account with a verified email. Your total is calculated by our server and shown to you before you confirm.',
   },
   {
     q: 'Can I cancel or change my dates?',
-    a: 'Each host picks a cancellation policy, shown on the stay page before you book. Most stays allow a full refund if you cancel several days before check-in.',
+    a: 'A booking cannot be edited. While it is pending or confirmed you can cancel it from My trips and book again with new dates, subject to availability.',
   },
   {
     q: 'What is included in the price?',
-    a: 'The nightly rate covers the whole home for the guests you selected. A one-time cleaning fee and a service fee are added at checkout, and the total is shown up front.',
+    a: 'The total is the number of nights multiplied by the stay’s nightly price, fixed when you book. Later changes to the nightly price do not affect a booking you have already made.',
   },
   {
     q: 'Are the photos and reviews real?',
-    a: 'Hosts upload their own photos, and only guests who have completed a stay can leave a review. Stays rated 4.8 or higher earn a Guest favourite badge.',
+    a: 'Hosts upload their own photos. Only the guest of a completed stay can leave a review, once per booking, and a stay’s rating is the average of its reviews. Stays rated 4.8 or higher show a Guest favourite badge.',
   },
   {
     q: 'How do I become a host?',
-    a: 'Create an account, add your home with photos, an amenities list and a nightly price, then set the dates you are available. You decide your own price, calendar and house rules.',
-  },
-  {
-    q: 'Who can I contact if something goes wrong during a stay?',
-    a: 'Message your host first, since they can usually fix things quickly. If you cannot reach them, our support team can step in at any hour.',
+    a: 'Host accounts are set up by invitation from the Blüdhaven team, who also assign a subscription plan. Have a look at the plans, get in touch with the team, and once your account is ready you can add your homes with photos, amenities and a nightly price.',
   },
 ]

@@ -18,14 +18,21 @@ const sizes = {
   lg: 'px-7.5 py-3.5 text-lg',
 }
 
-/** Renders a <Link> when `to` is given, otherwise a <button>. */
-export default function Button({ to, variant = 'primary', size = 'md', block = false, className, children, type = 'button', ...rest }) {
+/** Renders a <Link> when `to` is given, an <a> when `href` is (mailto:, external), otherwise a <button>. */
+export default function Button({ to, href, variant = 'primary', size = 'md', block = false, className, children, type = 'button', ...rest }) {
   const classes = cx(base, variants[variant], sizes[size], block && 'w-full', className)
   if (to) {
     return (
       <Link to={to} className={classes} data-motion="button" {...rest}>
         {children}
       </Link>
+    )
+  }
+  if (href) {
+    return (
+      <a href={href} className={classes} data-motion="button" {...rest}>
+        {children}
+      </a>
     )
   }
   return (

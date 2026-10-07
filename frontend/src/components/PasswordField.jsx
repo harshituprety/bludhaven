@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { inputClass } from '../utils/ui'
 
 /** Password input with a show/hide toggle. */
-export default function PasswordField({ label = 'Password', hint, ...input }) {
+export default function PasswordField({ label = 'Password', hint, error, ...input }) {
   const id = useId()
   const [visible, setVisible] = useState(false)
   return (
@@ -15,7 +15,8 @@ export default function PasswordField({ label = 'Password', hint, ...input }) {
         <input
           id={id}
           type={visible ? 'text' : 'password'}
-          aria-describedby={hint ? `${id}-hint` : undefined}
+          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          aria-invalid={error ? true : undefined}
           className={`${inputClass} pr-12`}
           {...input}
         />
@@ -28,7 +29,12 @@ export default function PasswordField({ label = 'Password', hint, ...input }) {
           {visible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
-      {hint && (
+      {error && (
+        <small id={`${id}-error`} role="alert" className="font-semibold text-danger">
+          {error}
+        </small>
+      )}
+      {hint && !error && (
         <small id={`${id}-hint`} className="text-ink-soft">
           {hint}
         </small>

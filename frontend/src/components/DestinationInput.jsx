@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import { MapPin } from 'lucide-react'
-import { destinations } from '../data/properties'
+import useDestinations from '../hooks/useDestinations'
 import useClickOutside from '../hooks/useClickOutside'
 import SearchField, { controlClass, popoverClass } from './SearchField'
 import { cx } from '../utils/ui'
@@ -10,6 +10,7 @@ export default function DestinationInput({ value, onChange }) {
   const [active, setActive] = useState(-1)
   const ref = useRef(null)
   const listId = useId()
+  const { destinations } = useDestinations()
   const closeList = () => setOpen(false)
   useClickOutside(ref, closeList, open)
 

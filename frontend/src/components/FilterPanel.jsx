@@ -1,5 +1,5 @@
-import { allAmenities, propertyTypes } from '../data/properties'
-import { DEFAULT_FILTERS, countActiveFilters } from '../utils/search'
+import { PROPERTY_TYPES } from '../utils/mappers'
+import { DEFAULT_FILTERS, RATING_OPTIONS, countActiveFilters } from '../utils/search'
 import { inputClass, linkButtonClass } from '../utils/ui'
 
 const toggle = (list, item) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
@@ -26,7 +26,11 @@ function Chip({ label, type = 'checkbox', ...input }) {
   )
 }
 
-export default function FilterPanel({ filters, onChange }) {
+/**
+ * `amenities` is the API list `[{id, name}]`; `amenitiesState` is { loading, error, onRetry } for loading it.
+ * Filters are controlled by the page (it keeps them in the URL).
+ */
+export default function FilterPanel({ filters, onChange, amenities = [], amenitiesState = {} }) {
   const set = (patch) => onChange({ ...filters, ...patch })
   const active = countActiveFilters(filters)
 
@@ -71,8 +75,8 @@ export default function FilterPanel({ filters, onChange }) {
 
       <Group legend="Property type">
         <div className="flex flex-wrap gap-2">
-          {propertyTypes.map((t) => (
-            <Chip key={t} label={t} checked={filters.types.includes(t)} onChange={() => set({ types: toggle(filters.types, t) })} />
+          {PROPERTY_TYPES.map((t) => (
+            <Chip key={t.value} label={t.label} checked={filters.types.includes(t.value)} onChange={() => set({ types: toggle(filters.types, t.value) })} />
           ))}
         </div>
       </Group>
@@ -85,28 +89,49 @@ export default function FilterPanel({ filters, onChange }) {
         </div>
       </Group>
 
+      <Group legend="Bathrooms">
+        <div className="flex flex-wrap gap-2">
+          {[0, 1, 2, 3].map((n) => (
+            <Chip key={n} type="radio" name="bathrooms" label={n === 0 ? 'Any' : `${n}+`} checked={filters.minBathrooms === n} onChange={() => set({ minBathrooms: n })} />
+          ))}
+        </div>
+      </Group>
+
       <Group legend="Guest rating">
         <div className="flex flex-wrap gap-2">
-          {[0, 4.5, 4.7, 4.9].map((n) => (
+          {RATING_OPTIONS.map((n) => (
             <Chip key={n} type="radio" name="rating" label={n === 0 ? 'Any' : `${n}+`} checked={filters.minRating === n} onChange={() => set({ minRating: n })} />
           ))}
         </div>
       </Group>
 
       <Group legend="Amenities">
-        <div className="grid gap-1">
-          {allAmenities.map((a) => (
-            <label key={a} className="flex cursor-pointer items-center gap-3 py-1">
-              <input
-                type="checkbox"
-                className="size-4.5 accent-primary"
-                checked={filters.amenities.includes(a)}
-                onChange={() => set({ amenities: toggle(filters.amenities, a) })}
-              />
-              <span>{a}</span>
-            </label>
-          ))}
-        </div>
+        {amenitiesState.loading ? (
+          <p role="status" className="text-sm text-ink-soft">
+            Loading amenities…
+          </p>
+        ) : amenitiesState.error ? (
+          <p role="alert" className="text-sm text-danger">
+            Couldn’t load amenities.{' '}
+            <button type="button" onClick={amenitiesState.onRetry} className={linkButtonClass}>
+              Try again
+            </button>
+          </p>
+        ) : (
+          <div className="grid gap-1">
+            {amenities.map((a) => (
+              <label key={a.id} className="flex cursor-pointer items-center gap-3 py-1">
+                <input
+                  type="checkbox"
+                  className="size-4.5 accent-primary"
+                  checked={filters.amenities.includes(a.id)}
+                  onChange={() => set({ amenities: toggle(filters.amenities, a.id) })}
+                />
+                <span>{a.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
       </Group>
     </div>
   )

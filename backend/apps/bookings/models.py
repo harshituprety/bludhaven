@@ -4,14 +4,31 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
+from django.utils import timezone
+
+
+class BookingQuerySet(models.QuerySet):
+    def holding(self, now=None):
+        """Bookings that hold their dates right now.
+
+        CONFIRMED (paid) bookings always do. A PENDING booking, one still waiting for payment, holds its dates only
+        until ``expires_at``; a PENDING booking without an expiry (it cannot be created any more) holds nothing.
+        Evaluated at query time, so correctness never depends on the cleanup command having run.
+        """
+        now = now or timezone.now()
+        return self.filter(Q(status=Booking.Status.CONFIRMED) | Q(status=Booking.Status.PENDING, expires_at__gt=now))
 
 
 class Booking(models.Model):
     class Status(models.TextChoices):
-        PENDING = "PENDING", "Pending"
+        PENDING = "PENDING", "Awaiting payment"
         CONFIRMED = "CONFIRMED", "Confirmed"
         CANCELLED = "CANCELLED", "Cancelled"
         COMPLETED = "COMPLETED", "Completed"
+        EXPIRED = "EXPIRED", "Expired"  # the payment window passed without a verified payment
+        REFUND_REQUIRED = "REFUND_REQUIRED", "Refund required"  # a payment arrived after the booking expired
+
+    objects = BookingQuerySet.as_manager()
 
     guest = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="bookings")
     property = models.ForeignKey("catalog.Property", on_delete=models.PROTECT, related_name="bookings")
@@ -20,6 +37,8 @@ class Booking(models.Model):
     guests_count = models.PositiveSmallIntegerField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Indian rupees, fixed at booking time.")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    # While PENDING: when the hold on the dates ends (created_at + BOOKING_PAYMENT_WINDOW_MINUTES).
+    expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,6 +52,8 @@ class Booking(models.Model):
         indexes = [
             # For availability lookups: bookings of a property overlapping a date range.
             models.Index(fields=["property", "check_in", "check_out"], name="booking_availability_idx"),
+            # For the sweep that marks unpaid bookings EXPIRED.
+            models.Index(fields=["status", "expires_at"], name="booking_status_expiry_idx"),
         ]
 
     def __str__(self):

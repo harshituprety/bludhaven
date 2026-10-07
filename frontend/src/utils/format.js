@@ -6,9 +6,6 @@ const inr = new Intl.NumberFormat('en-IN', {
 
 export const formatPrice = (amount) => inr.format(amount)
 
-export const formatCompact = (n) =>
-  new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
-
 export const pluralize = (n, word, plural = `${word}s`) => `${n} ${n === 1 ? word : plural}`
 
 // Dates are handled as local "YYYY-MM-DD" strings. toISOString() would convert to
@@ -34,4 +31,11 @@ export function nightsBetween(checkIn, checkOut) {
 export function formatShortDate(iso) {
   if (!iso) return ''
   return parseISO(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+}
+
+const inrExact = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+/** Paise (an integer from the billing API) as rupees, keeping any paise: 123450 -> ₹1,234.50. */
+export const formatPaise = (paise) => {
+  const n = Number(paise) || 0
+  return n % 100 === 0 ? inr.format(n / 100) : inrExact.format(n / 100)
 }

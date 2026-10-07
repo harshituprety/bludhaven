@@ -1,32 +1,35 @@
-import { memo, useRef, useState } from 'react'
+import { memo, useRef } from 'react'
 import Img from './Img'
 import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import Badge from './Badge'
 import Rating from './Rating'
 import PriceDisplay from './PriceDisplay'
-import { gsap, prefersReducedMotion, useGSAP } from '../utils/gsap'
+import { gsap, prefersReducedMotion } from '../utils/gsap'
+import useFavourites from '../hooks/useFavourites'
 import { cx } from '../utils/ui'
 import { pluralize } from '../utils/format'
 
 // memo: filtering or sorting re-renders the grid, but unchanged cards keep their output.
 export default memo(function PropertyCard({ property, headingLevel: Heading = 'h3' }) {
-  const [saved, setSaved] = useState(false) // visual only until accounts exist
+  const { isSaved, isPending, toggle } = useFavourites()
   const cardRef = useRef(null)
   const ringRef = useRef(null)
   const { id, title, location, image, rating, reviews, bedrooms, bathrooms, pricePerNight } = property
 
-  // contextSafe ties the tween created in the click handler to this component,
-  // so it is reverted if the card unmounts mid-animation.
-  const { contextSafe } = useGSAP({ scope: cardRef })
-  const toggleSaved = contextSafe((event) => {
-    setSaved((s) => !s)
-    if (!prefersReducedMotion()) {
-      gsap.fromTo(event.currentTarget, { scale: 0.65 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' })
-      // A ring ripples out when saving (not when un-saving).
-      if (!saved) gsap.fromTo(ringRef.current, { scale: 0.5, autoAlpha: 0.7 }, { scale: 1.9, autoAlpha: 0, duration: 0.7, ease: 'power2.out' })
-    }
-  })
+  const saved = isSaved(id)
+  const pending = isPending(id)
+
+  const toggleSaved = async (event) => {
+    if (pending) return
+    const button = event.currentTarget
+    const willSave = !saved
+    const result = await toggle(id) // signed-out visitors are sent to /login by the provider
+    if (!result?.ok || prefersReducedMotion()) return
+    gsap.fromTo(button, { scale: 0.65 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' })
+    // A ring ripples out when saving (not when un-saving).
+    if (willSave && ringRef.current) gsap.fromTo(ringRef.current, { scale: 0.5, autoAlpha: 0.7 }, { scale: 1.9, autoAlpha: 0, duration: 0.7, ease: 'power2.out' })
+  }
 
   return (
     <article ref={cardRef} data-motion="card" className="group relative">
@@ -35,9 +38,9 @@ export default memo(function PropertyCard({ property, headingLevel: Heading = 'h
           <Img
             src={image}
             alt={`${title} in ${location}`}
-            className="size-full object-cover transition-transform duration-900 ease-in-out group-hover:scale-105"
+            className="size-full object-cover transition-transform duration-900 ease-in-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
-          {rating >= 4.8 && <Badge className="absolute top-3 left-3">Guest favourite</Badge>}
+          {Number(rating) >= 4.8 && reviews > 0 && <Badge className="absolute top-3 left-3">Guest favourite</Badge>}
         </div>
         <div className="px-1 pt-3">
           <p className="text-[0.8125rem] text-ink-soft">{location}</p>
@@ -55,9 +58,11 @@ export default memo(function PropertyCard({ property, headingLevel: Heading = 'h
         type="button"
         aria-pressed={saved}
         aria-label={saved ? `Remove ${title} from saved` : `Save ${title}`}
+        aria-busy={pending || undefined}
+        disabled={pending}
         onClick={toggleSaved}
         className={cx(
-          'absolute top-3 right-3 grid size-9 place-items-center rounded-full bg-surface/90 shadow-soft transition-colors',
+          'absolute top-3 right-3 grid size-9 place-items-center rounded-full bg-surface/90 shadow-soft transition-colors disabled:opacity-60',
           saved ? 'text-berry' : 'text-ink',
         )}
       >

@@ -33,7 +33,10 @@ export default function Modal({ open, onClose, title, size = 'md', children }) {
     <dialog
       ref={ref}
       aria-label={title}
-      onClose={onClose}
+      onClose={(e) => {
+        e.stopPropagation() // a nested dialog's close event must not close its parent
+        onClose()
+      }}
       onClick={(e) => e.target === ref.current && onClose()}
       className={cx(
         'm-auto max-h-[calc(100vh-2rem)] overflow-hidden rounded-panel bg-surface p-0 text-ink shadow-float',

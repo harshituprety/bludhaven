@@ -17,5 +17,15 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react(), tailwindcss(), seoPlugin(siteUrl)],
     define: { 'import.meta.env.VITE_SITE_URL': JSON.stringify(siteUrl) },
     server: { port: 5173, strictPort: true },
+    // vitest 3 bundles its own Vite; make sure it uses the automatic JSX runtime like the app build does.
+    esbuild: { jsx: 'automatic' },
+    oxc: { jsx: { runtime: 'automatic' } },
+    test: {
+      environment: 'jsdom',
+      globals: true,
+      setupFiles: ['./src/test/setup.js'],
+      css: false,
+      restoreMocks: true,
+    },
   }
 })

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { addDaysISO, parseISO, toISO, todayISO } from '../utils/format'
 import { cx } from '../utils/ui'
+import { canCheckIn, canCheckOut, nightTaken } from './booking/availability'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const monthName = (d) => d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
@@ -28,8 +29,10 @@ const navButton =
  * Range calendar: pick check-in, then check-out. Past days are disabled.
  * Keyboard: arrows move by day/week, PageUp/PageDown by month, Home/End to week edges.
  * The second month is hidden below the sm breakpoint (and when `months` is 1).
+ * With `blocked` (half-open ranges from the availability endpoint) taken nights are marked unavailable, a check-out
+ * cannot span a taken night or exceed `maxNights`, and a check-in may sit on a range's end (a check-out on its start).
  */
-export default function Calendar({ checkIn, checkOut, onSelect, months = 2, autoFocus = false }) {
+export default function Calendar({ checkIn, checkOut, onSelect, months = 2, autoFocus = false, blocked, maxNights }) {
   const today = todayISO()
   const [view, setView] = useState(() => firstOfMonth(checkIn || today))
   const [focused, setFocused] = useState(checkIn || today)
@@ -42,6 +45,14 @@ export default function Calendar({ checkIn, checkOut, onSelect, months = 2, auto
   const shift = (n) => setView((v) => new Date(v.getFullYear(), v.getMonth() + n, 1))
 
   const selectingEnd = Boolean(checkIn) && !checkOut
+  // Why a day cannot be picked right now: 'past', 'taken' (its night is booked) or 'unreachable' (a stay from the
+  // chosen check-in could not end there). '' means it can be picked.
+  const restriction = (iso) => {
+    if (iso < today) return 'past'
+    if ((!blocked?.length && !maxNights) || iso === checkIn || iso === checkOut) return ''
+    if (selectingEnd && iso > checkIn) return canCheckOut(checkIn, iso, blocked, maxNights) ? '' : nightTaken(iso, blocked) ? 'taken' : 'unreachable'
+    return canCheckIn(iso, blocked) ? '' : 'taken'
+  }
   const previewEnd = selectingEnd && hover > checkIn ? hover : checkOut
 
   const visible = useMemo(
@@ -127,7 +138,9 @@ export default function Calendar({ checkIn, checkOut, onSelect, months = 2, auto
                 <div className="grid grid-cols-7">
                   {cells.map((iso, idx) => {
                     if (!iso) return <span key={`pad-${idx}`} role="gridcell" />
-                    const disabled = iso < today
+                    const why = restriction(iso)
+                    const disabled = why === 'past'
+                    const unavailable = Boolean(why) && !disabled
                     const isStart = iso === checkIn
                     const isEnd = iso === previewEnd && Boolean(previewEnd)
                     const inRange = Boolean(checkIn && previewEnd) && iso > checkIn && iso < previewEnd
@@ -151,16 +164,19 @@ export default function Calendar({ checkIn, checkOut, onSelect, months = 2, auto
                           data-date={iso}
                           disabled={disabled}
                           tabIndex={iso === focused ? 0 : -1}
-                          aria-label={longDate(iso) + (isStart ? ', check-in' : '') + (iso === checkOut ? ', check-out' : '')}
+                          aria-label={longDate(iso) + (isStart ? ', check-in' : '') + (iso === checkOut ? ', check-out' : '') + (why === 'taken' ? ', unavailable' : '')}
                           aria-pressed={isStart || iso === checkOut}
-                          onClick={() => onSelect(iso)}
-                          onMouseEnter={() => setHover(iso)}
+                          aria-disabled={unavailable || undefined}
+                          onClick={() => !unavailable && onSelect(iso)}
+                          onMouseEnter={() => !why && setHover(iso)}
                           onMouseLeave={() => setHover('')}
                           onFocus={() => setFocused(iso)}
                           className={cx(
                             'grid size-10 place-items-center rounded-full text-sm font-medium transition-colors',
                             disabled && 'cursor-not-allowed text-ink-faint line-through opacity-40',
-                            !disabled && !(isStart || isEnd) && 'hover:ring-[1.5px] hover:ring-ink',
+                            unavailable && 'cursor-not-allowed text-ink-faint opacity-40',
+                            why === 'taken' && 'line-through',
+                            !why && !(isStart || isEnd) && 'hover:ring-[1.5px] hover:ring-ink',
                             (isStart || isEnd) && 'bg-primary font-bold text-white',
                             iso === today && !(isStart || isEnd) && 'font-bold text-brand underline underline-offset-4',
                           )}

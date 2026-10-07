@@ -5,12 +5,16 @@ import { pluralize } from '../utils/format'
 import { cx } from '../utils/ui'
 import SearchField, { controlClass, popoverClass } from './SearchField'
 
-const MAX_GUESTS = 16
+const DEFAULT_MAX_GUESTS = 16
 
 const stepButton =
   'grid size-8.5 place-items-center rounded-full border-[1.5px] border-line bg-surface hover:enabled:border-ink disabled:opacity-35'
 
-export default function GuestSelector({ value, onChange, className, divider }) {
+/**
+ * `max` caps the count (a property's capacity in the booking panel); `min` is 0 for search ("Add guests")
+ * and 1 when a booking needs at least one guest. `variant="boxed"` is the standalone bordered field.
+ */
+export default function GuestSelector({ value, onChange, className, divider, max = DEFAULT_MAX_GUESTS, min = 0, variant }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const id = useId()
@@ -18,7 +22,7 @@ export default function GuestSelector({ value, onChange, className, divider }) {
   useClickOutside(ref, closePanel, open)
 
   return (
-    <SearchField ref={ref} label="Guests" labelId={`${id}-label`} className={className} divider={divider}>
+    <SearchField ref={ref} label="Guests" labelId={`${id}-label`} className={className} divider={divider} variant={variant}>
       <button
         type="button"
         aria-haspopup="dialog"
@@ -41,7 +45,7 @@ export default function GuestSelector({ value, onChange, className, divider }) {
               <small className="block text-xs text-ink-soft">Everyone staying, including children</small>
             </div>
             <div className="flex items-center gap-3">
-              <button type="button" aria-label="Fewer guests" disabled={value <= 0} onClick={() => onChange(Math.max(0, value - 1))} className={stepButton}>
+              <button type="button" aria-label="Fewer guests" disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))} className={stepButton}>
                 <Minus size={16} />
               </button>
               <output aria-live="polite" className="min-w-[1.5ch] text-center font-bold">
@@ -50,8 +54,8 @@ export default function GuestSelector({ value, onChange, className, divider }) {
               <button
                 type="button"
                 aria-label="More guests"
-                disabled={value >= MAX_GUESTS}
-                onClick={() => onChange(Math.min(MAX_GUESTS, value + 1))}
+                disabled={value >= max}
+                onClick={() => onChange(Math.min(max, value + 1))}
                 className={stepButton}
               >
                 <Plus size={16} />

@@ -16,16 +16,16 @@ export default function DestinationCard({ destination }) {
       <Img
         src={image}
         alt=""
-        className="absolute inset-0 size-full object-cover transition-transform duration-900 ease-in-out group-hover:scale-105"
+        className="absolute inset-0 size-full object-cover transition-transform duration-900 ease-in-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       />
       <span aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-lagoon-900/0 from-15% via-lagoon-900/35 via-50% to-lagoon-900/90 transition-opacity duration-700 group-hover:opacity-90" />
       <span
         aria-hidden="true"
-        className="absolute top-4 right-4 grid size-10 translate-y-2 scale-75 place-items-center rounded-full bg-white text-ink opacity-0 shadow-card transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:scale-100 group-focus-visible:opacity-100"
+        className="absolute top-4 right-4 grid size-10 translate-y-2 scale-75 place-items-center rounded-full bg-white text-ink opacity-0 shadow-card transition-all duration-500 ease-out motion-reduce:transition-none group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:scale-100 group-focus-visible:opacity-100"
       >
         <ArrowUpRight size={18} />
       </span>
-      <span className="relative flex w-full flex-col gap-0.5 px-5 py-4 transition-transform duration-700 ease-out group-hover:-translate-y-1">
+      <span className="relative flex w-full flex-col gap-0.5 px-5 py-4 transition-transform duration-700 ease-out group-hover:-translate-y-1 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
         <span className="text-xs font-semibold tracking-wide text-white/85 uppercase">{state}</span>
         <strong className="font-display text-[1.375rem]">{name}</strong>
         <span className="flex items-center justify-between gap-3 text-sm text-white/90">

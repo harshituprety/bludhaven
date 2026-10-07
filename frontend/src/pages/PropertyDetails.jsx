@@ -1,73 +1,109 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Bath, BedDouble, Heart, Home as HomeIcon, MapPin, Share2, ShieldCheck, Users } from 'lucide-react'
+import { Bath, BedDouble, Heart, Home as HomeIcon, MapPin, Share2, Users } from 'lucide-react'
 import ImageGallery from '../components/ImageGallery'
 import Rating from '../components/Rating'
 import PriceDisplay from '../components/PriceDisplay'
 import AmenityList from '../components/AmenityList'
 import Modal from '../components/Modal'
 import Button from '../components/Button'
-import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
-import DateSelector from '../components/DateSelector'
+import DataState from '../components/DataState'
 import Seo from '../components/Seo'
+import BookingPanel from '../components/booking/BookingPanel'
+import ReviewList from '../components/reviews/ReviewList'
 import { absoluteUrl } from '../config/site'
-import { getPropertyById } from '../data/properties'
-import { formatPrice, nightsBetween, pluralize } from '../utils/format'
+import useApiQuery from '../hooks/useApiQuery'
+import useFavourites from '../hooks/useFavourites'
 import useScrollReveal from '../hooks/useScrollReveal'
-import { inputClass, linkButtonClass } from '../utils/ui'
-
-const CLEANING_FEE = 800
-const SERVICE_RATE = 0.1
+import { getProperty } from '../services/catalog'
+import { mapPropertyDetail } from '../utils/mappers'
+import { formatPrice, pluralize } from '../utils/format'
+import { linkButtonClass } from '../utils/ui'
 
 const block = 'border-b border-line py-6 first:pt-0 last:border-b-0'
 const blockTitle = 'mb-3 text-[1.375rem]'
 
-/** One row of the price breakdown. */
-function Line({ label, value, total = false }) {
+function DetailsSkeleton() {
   return (
-    <div className={total ? 'flex justify-between gap-3 border-t border-line pt-3 font-bold' : 'flex justify-between gap-3'}>
-      <dt className={total ? '' : 'text-ink-soft'}>{label}</dt>
-      <dd className="m-0">{value}</dd>
+    <div role="status" aria-busy="true" aria-label="Loading stay" className="page-container pt-6 pb-24">
+      <div aria-hidden="true">
+        <div className="skeleton mb-3 h-4 w-40 rounded" />
+        <div className="skeleton mb-4 h-10 w-2/3 rounded" />
+        <div className="skeleton h-[clamp(240px,36vw,420px)] rounded-panel" />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
+          <div className="flex flex-col gap-4">
+            <div className="skeleton h-8 w-1/2 rounded" />
+            <div className="skeleton h-5 w-full rounded" />
+            <div className="skeleton h-5 w-5/6 rounded" />
+            <div className="skeleton h-5 w-2/3 rounded" />
+          </div>
+          <div className="skeleton h-72 rounded-panel" />
+        </div>
+      </div>
+      <span className="sr-only">Loading…</span>
     </div>
+  )
+}
+
+function NotFoundStay() {
+  return (
+    <>
+      <Seo title="Stay not found" noindex />
+      <EmptyState
+        heading="h1"
+        icon={HomeIcon}
+        title="We couldn’t find that stay"
+        message="It may have been removed, or the link is incorrect."
+        action={<Button to="/properties">Browse all stays</Button>}
+      />
+    </>
   )
 }
 
 export default function PropertyDetails() {
   const { id } = useParams()
-  const property = getPropertyById(id)
-  const [params] = useSearchParams()
-  const [dates, setDates] = useState({ checkIn: params.get('checkIn') ?? '', checkOut: params.get('checkOut') ?? '' })
-  const [guests, setGuests] = useState(Math.max(1, Number(params.get('guests')) || 1))
-  const [amenitiesOpen, setAmenitiesOpen] = useState(false)
-  const [reserveOpen, setReserveOpen] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const rootRef = useRef(null)
-  useScrollReveal(rootRef, [id]) // before the early return below: hooks must run on every render
+  const { data, error, loading, reload } = useApiQuery((signal) => getProperty(id, signal), [id])
+  const property = useMemo(() => (data ? mapPropertyDetail(data) : null), [data])
 
-  if (!property) {
+  if (loading && !property) return <DetailsSkeleton />
+  if (error?.status === 404 || error?.status === 400) return <NotFoundStay />
+  if (error) {
     return (
-      <>
-        <Seo title="Stay not found" noindex />
-        <EmptyState
-          heading="h1"
-          icon={HomeIcon}
-          title="We couldn’t find that stay"
-          message="It may have been removed, or the link is incorrect."
-          action={<Button to="/properties">Browse all stays</Button>}
-        />
-      </>
+      <div className="page-container pt-14 pb-24">
+        <Seo title="Stay unavailable" noindex />
+        <DataState error={error} onRetry={reload} />
+      </div>
     )
   }
+  if (!property || String(property.id) !== String(id)) return <DetailsSkeleton />
+  return <PropertyView key={property.id} p={property} />
+}
 
-  const p = property
-  const nights = nightsBetween(dates.checkIn, dates.checkOut)
-  const subtotal = nights * p.pricePerNight
-  const service = Math.round(subtotal * SERVICE_RATE)
-  const total = subtotal + service + (nights ? CLEANING_FEE : 0)
+function PropertyView({ p }) {
+  const [params] = useSearchParams()
+  const [amenitiesOpen, setAmenitiesOpen] = useState(false)
+  const [toast, setToast] = useState('')
+  const rootRef = useRef(null)
+  useScrollReveal(rootRef)
+  const { isSaved, isPending, toggle } = useFavourites()
+  const saved = isSaved(p.id)
+
+  const onSave = async () => {
+    const result = await toggle(p.id) // signed-out visitors are sent to /login
+    setToast(result?.error ? 'We couldn’t update your saved stays. Please try again.' : '')
+  }
+  const onShare = async () => {
+    try {
+      await navigator.clipboard?.writeText(window.location.href)
+      setToast('Link copied.')
+    } catch {
+      setToast('')
+    }
+  }
 
   const facts = [
-    { icon: Users, label: pluralize(p.guests, 'guest') },
+    { icon: Users, label: `Sleeps ${p.guests}` },
     { icon: BedDouble, label: pluralize(p.bedrooms, 'bedroom') },
     { icon: Bath, label: pluralize(p.bathrooms, 'bathroom') },
     { icon: HomeIcon, label: p.type },
@@ -84,12 +120,12 @@ export default function PropertyDetails() {
         name: p.title,
         description: p.description,
         url: absoluteUrl(`/properties/${p.id}`),
-        image: p.images.map((img) => absoluteUrl(img.src)),
+        ...(p.hasImages ? { image: p.images.map((img) => absoluteUrl(img.src)) } : {}),
         address: { '@type': 'PostalAddress', addressLocality: p.location, addressCountry: 'IN' },
         numberOfRooms: p.bedrooms,
         occupancy: { '@type': 'QuantitativeValue', maxValue: p.guests },
         amenityFeature: p.amenities.map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true })),
-        aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.reviews },
+        ...(p.reviews > 0 && p.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.reviews } } : {}),
         priceRange: `${formatPrice(p.pricePerNight)} per night`,
       },
       {
@@ -102,13 +138,16 @@ export default function PropertyDetails() {
     ],
   }
 
+  const initialDates = { checkIn: params.get('checkIn') ?? '', checkOut: params.get('checkOut') ?? '' }
+  const initialGuests = Number(params.get('guests')) || 1
+
   return (
     <div ref={rootRef} className="page-container pt-6 pb-24 lg:pb-18">
       <Seo
         title={`${p.title} in ${p.city}`}
         description={metaDescription}
         path={`/properties/${p.id}`}
-        image={p.image}
+        image={p.hasImages ? p.image : undefined}
         type="website"
         jsonLd={jsonLd}
       />
@@ -117,7 +156,7 @@ export default function PropertyDetails() {
           Stays
         </Link>{' '}
         /{' '}
-        <Link to={`/properties?destination=${p.city}`} className="underline hover:text-ink">
+        <Link to={`/properties?destination=${encodeURIComponent(p.city)}`} className="underline hover:text-ink">
           {p.city}
         </Link>
       </nav>
@@ -130,18 +169,21 @@ export default function PropertyDetails() {
             <MapPin size={16} aria-hidden="true" /> {p.location}
           </span>
           <span className="flex gap-4 sm:ml-auto">
-            <button type="button" onClick={() => navigator.clipboard?.writeText(window.location.href)} className={`${linkButtonClass} text-ink`}>
+            <button type="button" onClick={onShare} className={`${linkButtonClass} text-ink`}>
               <Share2 size={16} aria-hidden="true" /> Share
             </button>
-            <button type="button" aria-pressed={saved} onClick={() => setSaved((s) => !s)} className={`${linkButtonClass} text-ink`}>
+            <button type="button" aria-pressed={saved} disabled={isPending(p.id)} onClick={onSave} className={`${linkButtonClass} text-ink`}>
               <Heart size={16} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" /> {saved ? 'Saved' : 'Save'}
             </button>
           </span>
         </div>
+        <p role="status" className="mt-1 min-h-5 text-sm text-ink-soft">
+          {toast}
+        </p>
       </header>
 
       <div data-reveal="image">
-        <ImageGallery images={p.images} title={p.title} />
+        <ImageGallery images={p.images} title={p.title} hasImages={p.hasImages} />
       </div>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
@@ -164,82 +206,49 @@ export default function PropertyDetails() {
               {p.host.name
                 .split(' ')
                 .map((n) => n[0])
-                .join('')}
+                .join('')
+                .slice(0, 2)}
             </span>
-            <div>
-              <h2 className="text-[1.375rem]">Hosted by {p.host.name}</h2>
-              <p className="text-sm text-ink-soft">
-                Hosting since {p.host.since} &middot; {p.host.responseRate}% response rate
-              </p>
-            </div>
-            {p.host.superhost && (
-              <Badge tone="soft" className="sm:ml-auto">
-                <ShieldCheck size={14} aria-hidden="true" /> Top host
-              </Badge>
-            )}
+            <h2 className="text-[1.375rem]">Hosted by {p.host.name}</h2>
           </section>
 
-          <section data-reveal="section" className={block}>
-            <h2 className={blockTitle}>About this place</h2>
-            <p className="max-w-[62ch] text-lg text-ink-soft">{p.description}</p>
-          </section>
+          {p.description && (
+            <section data-reveal="section" className={block}>
+              <h2 className={blockTitle}>About this place</h2>
+              <p className="max-w-[62ch] text-lg whitespace-pre-line text-ink-soft">{p.description}</p>
+            </section>
+          )}
 
-          <section data-reveal="section" className={block}>
-            <h2 className={blockTitle}>What this place offers</h2>
-            <AmenityList amenities={p.amenities.slice(0, 6)} />
-            {p.amenities.length > 6 && (
-              <Button variant="secondary" onClick={() => setAmenitiesOpen(true)} className="mt-4">
-                Show all {p.amenities.length} amenities
-              </Button>
-            )}
-          </section>
+          {p.amenities.length > 0 && (
+            <section data-reveal="section" className={block}>
+              <h2 className={blockTitle}>What this place offers</h2>
+              <AmenityList amenities={p.amenities.slice(0, 6)} />
+              {p.amenities.length > 6 && (
+                <Button variant="secondary" onClick={() => setAmenitiesOpen(true)} className="mt-4">
+                  Show all {p.amenities.length} amenities
+                </Button>
+              )}
+            </section>
+          )}
 
-          <section data-reveal="section" className={block}>
-            <h2 className={blockTitle}>Guest reviews</h2>
-            <p className="flex items-center gap-2">
-              <Rating value={p.rating} size={22} /> from {pluralize(p.reviews, 'review')}
+          <section aria-labelledby="reviews-title" className={block}>
+            <h2 id="reviews-title" className={blockTitle}>
+              Guest reviews
+            </h2>
+            <p className="mb-5 flex items-center gap-2">
+              <Rating value={p.rating} size={22} count={p.reviews} />
+              {p.reviews > 0 && <span className="text-ink-soft">from {pluralize(p.reviews, 'review')}</span>}
             </p>
+            <ReviewList propertyId={p.id} />
           </section>
         </div>
 
         <aside id="booking" aria-label="Book this stay" className="lg:sticky lg:top-21">
-          <div data-reveal="section" className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-6 shadow-card">
-            <div className="flex items-baseline justify-between gap-3">
-              <PriceDisplay amount={p.pricePerNight} size="lg" />
-              <Rating value={p.rating} count={p.reviews} />
-            </div>
-
-            <DateSelector {...dates} onChange={setDates} variant="boxed" />
-
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">Guests</span>
-              <select className={inputClass} value={guests} onChange={(e) => setGuests(Number(e.target.value))}>
-                {Array.from({ length: p.guests }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {pluralize(i + 1, 'guest')}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <Button block size="lg" onClick={() => setReserveOpen(true)}>
-              {nights ? 'Reserve' : 'Check availability'}
-            </Button>
-            <p className="text-center text-sm text-ink-soft">You won’t be charged yet</p>
-
-            {nights > 0 && (
-              <dl className="m-0 flex flex-col gap-2">
-                <Line label={`${formatPrice(p.pricePerNight)} × ${pluralize(nights, 'night')}`} value={formatPrice(subtotal)} />
-                <Line label="Cleaning fee" value={formatPrice(CLEANING_FEE)} />
-                <Line label="Service fee" value={formatPrice(service)} />
-                <Line label="Total" value={formatPrice(total)} total />
-              </dl>
-            )}
-          </div>
+          <BookingPanel property={p} initialDates={initialDates} initialGuests={initialGuests} />
         </aside>
       </div>
 
-      {/* Mobile / tablet sticky reserve bar */}
+      {/* Mobile / tablet sticky bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-line bg-surface px-4 py-3 shadow-[0_-6px_16px_rgb(18_34_45/8%)] sm:px-8 lg:hidden">
         <PriceDisplay amount={p.pricePerNight} />
         <Button onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}>Choose dates</Button>
@@ -247,16 +256,6 @@ export default function PropertyDetails() {
 
       <Modal open={amenitiesOpen} onClose={() => setAmenitiesOpen(false)} title="What this place offers">
         <AmenityList amenities={p.amenities} columns={1} />
-      </Modal>
-
-      <Modal open={reserveOpen} onClose={() => setReserveOpen(false)} title="Booking isn’t available yet">
-        <p>
-          Reservations are part of a later phase. Once booking is built, this is where you’ll confirm{' '}
-          {nights ? `${pluralize(nights, 'night')} at ${p.title}` : 'your dates'} and pay.
-        </p>
-        <div className="mt-6 flex justify-end">
-          <Button onClick={() => setReserveOpen(false)}>Got it</Button>
-        </div>
       </Modal>
     </div>
   )

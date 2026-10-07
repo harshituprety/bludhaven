@@ -5,11 +5,18 @@ import Button from './Button'
 import Modal from './Modal'
 import { cx } from '../utils/ui'
 
-const tilePlacement = ['row-span-2', '', '', '', '']
+// Layout by photo count, so 1-4 photos fill the mosaic instead of leaving holes.
+const MOSAIC = {
+  1: { grid: 'grid-cols-1 grid-rows-1', tiles: [''] },
+  2: { grid: 'grid-cols-2 grid-rows-1', tiles: ['', ''] },
+  3: { grid: 'grid-cols-[2fr_1fr] grid-rows-2', tiles: ['row-span-2', '', ''] },
+  4: { grid: 'grid-cols-[2fr_1fr_1fr] grid-rows-2', tiles: ['row-span-2', '', '', 'col-span-2'] },
+  5: { grid: 'grid-cols-[2fr_1fr_1fr] grid-rows-2', tiles: ['row-span-2', '', '', '', ''] },
+}
 const navButton = 'hidden size-10 place-items-center rounded-full bg-mist transition-colors hover:bg-line sm:grid'
 
 /** Desktop: 5-photo mosaic. Mobile: swipe carousel. Both open a lightbox. */
-export default function ImageGallery({ images, title }) {
+export default function ImageGallery({ images, title, hasImages = true }) {
   const [open, setOpen] = useState(false)
   const [index, setIndex] = useState(0)
   const [slide, setSlide] = useState(0)
@@ -38,23 +45,35 @@ export default function ImageGallery({ images, title }) {
     if (el) setSlide(Math.round(el.scrollLeft / el.clientWidth))
   }
 
+  if (!hasImages) {
+    return (
+      <section aria-label={`${title} photos`} className="relative">
+        <div className="relative grid h-[clamp(240px,36vw,420px)] place-items-center overflow-hidden rounded-panel bg-mist">
+          <Img src={images[0].src} alt="" className="absolute inset-0 size-full object-cover" />
+          <p className="relative rounded-full bg-surface/90 px-4 py-1.5 text-sm font-semibold text-ink-soft shadow-soft">Photos coming soon</p>
+        </div>
+      </section>
+    )
+  }
+
+  const mosaic = MOSAIC[Math.min(images.length, 5)]
   return (
     <section aria-label={`${title} photos`} className="relative">
       {/* Tablet / desktop mosaic */}
-      <div className="relative hidden h-[clamp(300px,42vw,480px)] grid-cols-[2fr_1fr_1fr] grid-rows-2 gap-2 overflow-hidden rounded-panel md:grid">
+      <div className={cx('relative hidden h-[clamp(300px,42vw,480px)] gap-2 overflow-hidden rounded-panel md:grid', mosaic.grid)}>
         {images.slice(0, 5).map((img, i) => (
           <button
             type="button"
-            key={img.src}
+            key={img.id ?? img.src}
             onClick={() => show(i)}
             aria-label={`Open photo ${i + 1} of ${images.length}`}
-            className={cx('overflow-hidden bg-mist p-0', tilePlacement[i])}
+            className={cx('overflow-hidden bg-mist p-0', mosaic.tiles[i])}
           >
             <Img
               src={img.src}
               alt={`${title}: ${img.alt}`}
               eager={i === 0}
-              className="size-full object-cover transition duration-700 hover:scale-105 hover:brightness-95"
+              className="size-full object-cover transition duration-700 hover:scale-105 hover:brightness-95 motion-reduce:transition-none motion-reduce:hover:scale-100"
             />
           </button>
         ))}
@@ -74,7 +93,7 @@ export default function ImageGallery({ images, title }) {
         >
           {images.map((img, i) => (
             <Img
-              key={img.src}
+              key={img.id ?? img.src}
               src={img.src}
               alt={`${title}: ${img.alt}`}
               eager={i === 0}

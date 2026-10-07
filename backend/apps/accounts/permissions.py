@@ -14,7 +14,7 @@ Usage::
 
 from operator import attrgetter
 
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from .models import Role
 
@@ -66,3 +66,25 @@ class IsOwnerOrSuperAdmin(BasePermission):
         except AttributeError:
             return False
         return owner is not None and owner.pk == user.pk
+
+
+class IsSuperAdminOrReadOnly(BasePermission):
+    """Anyone may read; only a Super Admin may write (destinations, amenities)."""
+
+    message = "Only a Super Admin can change this."
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return IsSuperAdmin().has_permission(request, view)
+
+
+class IsEmailVerified(BasePermission):
+    """The signed-in user has confirmed their email address (use together with IsAuthenticated)."""
+
+    message = "Verify your email address to do this."
+    code = "email_not_verified"  # clients can tell this 403 apart from a role 403
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user and user.is_authenticated and user.is_active and user.is_email_verified)

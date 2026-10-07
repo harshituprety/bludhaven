@@ -1,8 +1,8 @@
 from django.db import IntegrityError, transaction
 from django.test import TestCase
-from rest_framework.test import APIClient, APIRequestFactory
+from rest_framework.test import APIRequestFactory
 
-from apps.core.testing import PASSWORD, make_property, make_user
+from apps.core.testing import PASSWORD, ApiTestCase, make_property, make_user
 
 from .models import Role, User
 from .permissions import HasRole, IsEndUser, IsHost, IsHostOrSuperAdmin, IsOwnerOrSuperAdmin, IsSuperAdmin
@@ -44,9 +44,9 @@ class UserModelTests(TestCase):
             u.full_clean()
 
 
-class AuthApiTests(TestCase):
+class AuthApiTests(ApiTestCase):
     def setUp(self):
-        self.client = APIClient()
+        super().setUp()
         self.user = make_user(Role.HOST, email="host@example.com")
 
     def login(self, email="host@example.com", password=PASSWORD):
@@ -55,7 +55,7 @@ class AuthApiTests(TestCase):
     def test_login_by_email_returns_tokens_and_user(self):
         r = self.login("HOST@example.com")  # case-insensitive
         self.assertEqual(r.status_code, 200)
-        self.assertEqual({"access", "refresh", "user"}, set(r.data))
+        self.assertEqual({"access", "user"}, set(r.data))  # the refresh token travels only in the httpOnly cookie
         self.assertEqual(r.data["user"]["role"], Role.HOST)
         self.assertNotIn("password", r.data["user"])
 
@@ -79,18 +79,23 @@ class AuthApiTests(TestCase):
         self.assertEqual((r.status_code, r.data["email"], r.data["role"]), (200, "host@example.com", Role.HOST))
 
     def test_refresh_rotates_and_blacklists_the_old_refresh_token(self):
-        old = self.login().data["refresh"]
-        r = self.client.post("/api/auth/token/refresh/", {"refresh": old}, format="json")
+        self.login()
+        old = self.refresh_cookie()
+        r = self.client.post("/api/auth/token/refresh/")
         self.assertEqual(r.status_code, 200)
-        self.assertIn("access", r.data)
-        self.assertNotEqual(r.data["refresh"], old)
-        again = self.client.post("/api/auth/token/refresh/", {"refresh": old}, format="json")
-        self.assertEqual(again.status_code, 401)
+        self.assertEqual(set(r.json()), {"access"})
+        self.assertNotEqual(self.refresh_cookie(), old)
+        self.set_refresh_cookie(old)  # replaying the rotated-out token
+        self.assertEqual(self.client.post("/api/auth/token/refresh/").status_code, 401)
 
-    def test_blacklist_endpoint_revokes_a_refresh_token(self):
-        refresh = self.login().data["refresh"]
-        self.assertEqual(self.client.post("/api/auth/token/blacklist/", {"refresh": refresh}, format="json").status_code, 200)
-        self.assertEqual(self.client.post("/api/auth/token/refresh/", {"refresh": refresh}, format="json").status_code, 401)
+    def test_logout_revokes_the_refresh_token_and_clears_the_cookie(self):
+        self.login()
+        token = self.refresh_cookie()
+        r = self.client.post("/api/auth/token/blacklist/")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.cookies["bludhaven_refresh"].value, "")
+        self.set_refresh_cookie(token)
+        self.assertEqual(self.client.post("/api/auth/token/refresh/").status_code, 401)
 
     def test_health_stays_public_even_with_a_bad_token(self):
         self.assertEqual(self.client.get("/api/health/").status_code, 200)

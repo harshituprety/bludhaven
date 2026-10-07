@@ -4,6 +4,8 @@ import { Menu, X } from 'lucide-react'
 import Logo from './Logo'
 import Button from './Button'
 import ThemeToggle from './ThemeToggle'
+import UserMenu from './UserMenu'
+import useAuth from '../hooks/useAuth'
 import { cx } from '../utils/ui'
 import { MOTION_OK, gsap, useGSAP } from '../utils/gsap'
 import { ScrollTrigger } from '../utils/scrollTrigger'
@@ -19,6 +21,7 @@ const linkClass = ({ isActive }) =>
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const { status } = useAuth()
   const barRef = useRef(null)
 
   // Same bar, two states: over the first ~80px of scroll it slims from 80px to 64px and gains a
@@ -69,16 +72,24 @@ export default function Navbar() {
           <NavLink to="/destinations" className={linkClass}>
             Destinations
           </NavLink>
-          <NavLink to="/register" className={linkClass}>
+          <NavLink to="/plans" className={linkClass}>
             Become a host
           </NavLink>
           <div className="mt-4 flex items-center gap-2 lg:mt-0 lg:ml-auto max-lg:*:flex-1">
-            <Button to="/login" variant="ghost">
-              Log in
-            </Button>
-            <Button to="/register" variant="accent">
-              Sign up
-            </Button>
+            {status === 'authenticated' ? (
+              <UserMenu />
+            ) : status === 'loading' ? (
+              <span aria-hidden="true" className="skeleton h-10 w-36 rounded-full" />
+            ) : (
+              <>
+                <Button to="/login" variant="ghost">
+                  Log in
+                </Button>
+                <Button to="/register" variant="accent">
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 

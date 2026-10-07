@@ -4,12 +4,18 @@ import SearchBar from '../components/SearchBar'
 import PropertyGrid from '../components/PropertyGrid'
 import Button from '../components/Button'
 import Seo from '../components/Seo'
+import WhyBook from '../components/WhyBook'
 import Testimonials from '../components/Testimonials'
 import Faq from '../components/Faq'
 import { faqs } from '../data/content'
 import { SITE, absoluteUrl } from '../config/site'
 import { bannerImages } from '../assets/images'
-import { destinations, featuredProperties } from '../data/properties'
+import DataState from '../components/DataState'
+import { DestinationGridSkeleton } from '../components/Skeletons'
+import useDestinations from '../hooks/useDestinations'
+import useApiQuery from '../hooks/useApiQuery'
+import { listProperties } from '../services/catalog'
+import { mapProperty } from '../utils/mappers'
 import { MOTION_OK, gsap, useGSAP } from '../utils/gsap'
 import useScrollReveal from '../hooks/useScrollReveal'
 import Img from '../components/Img'
@@ -24,7 +30,13 @@ const heroImage = bannerImages.heroFuji
 const homeJsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
-    { '@type': 'Organization', '@id': absoluteUrl('/#org'), name: SITE.name, url: absoluteUrl('/'), logo: absoluteUrl('/favicon.svg') },
+    {
+      '@type': 'Organization',
+      '@id': absoluteUrl('/#org'),
+      name: SITE.name,
+      url: absoluteUrl('/'),
+      logo: absoluteUrl('/favicon.svg'),
+    },
     {
       '@type': 'WebSite',
       '@id': absoluteUrl('/#site'),
@@ -39,9 +51,22 @@ const homeJsonLd = {
     },
     {
       '@type': 'FAQPage',
-      mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
     },
   ],
+}
+
+// The original home page showed properties 1-5 and 7-9 of the catalogue. The backend's "Recommended" order
+// (oldest first, the order the sample data was created in) puts them at those same positions, counted from 1.
+const FEATURED_POSITIONS = [1, 2, 3, 4, 5, 7, 8, 9]
+
+async function loadFeatured(signal) {
+  const { results } = await listProperties({ ordering: 'created_at', page_size: Math.max(...FEATURED_POSITIONS) }, signal)
+  return FEATURED_POSITIONS.map((position) => results[position - 1]).filter(Boolean).map(mapProperty)
 }
 
 function SectionHead({ eyebrow, title, children, action }) {
@@ -59,6 +84,8 @@ function SectionHead({ eyebrow, title, children, action }) {
 
 export default function Home() {
   const rootRef = useRef(null)
+  const { destinations, total: destinationTotal, loading: destLoading, error: destError, reload: reloadDestinations } = useDestinations()
+  const { data: featured, loading: featuredLoading, error: featuredError, reload: reloadFeatured } = useApiQuery(loadFeatured, [])
 
   // Hero entrance: headline, subtitle, then the search card, one after another.
   useGSAP(
@@ -81,18 +108,30 @@ export default function Home() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia()
-      mm.add({ motion: MOTION_OK, large: '(min-width: 1024px)', medium: '(min-width: 640px) and (max-width: 1023px)' }, (ctx) => {
-        const { motion, large, medium } = ctx.conditions
-        if (!motion) return
-        const scale = large ? 0.9 : medium ? 0.94 : 0.97
-        const tl = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: { trigger: '[data-hero-section]', start: 'top top', end: 'bottom top', scrub: 0.6 },
-        })
-        tl.to('[data-hero-section]', { scale, transformOrigin: '50% 100%' }, 0)
-          .to('[data-hero-bg]', { yPercent: large ? 12 : 6 }, 0)
-          .to('[data-hero-content]', { y: large ? -36 : -18, autoAlpha: 0.35 }, 0)
-      })
+      mm.add(
+        {
+          motion: MOTION_OK,
+          large: '(min-width: 1024px)',
+          medium: '(min-width: 640px) and (max-width: 1023px)',
+        },
+        (ctx) => {
+          const { motion, large, medium } = ctx.conditions
+          if (!motion) return
+          const scale = large ? 0.9 : medium ? 0.94 : 0.97
+          const tl = gsap.timeline({
+            defaults: { ease: 'none' },
+            scrollTrigger: {
+              trigger: '[data-hero-section]',
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 0.6,
+            },
+          })
+          tl.to('[data-hero-section]', { scale, transformOrigin: '50% 100%' }, 0)
+            .to('[data-hero-bg]', { yPercent: large ? 12 : 6 }, 0)
+            .to('[data-hero-content]', { y: large ? -36 : -18, autoAlpha: 0.35 }, 0)
+        },
+      )
       return () => mm.revert()
     },
     { scope: rootRef },
@@ -118,8 +157,7 @@ export default function Home() {
 
         <div data-hero-content className="page-container relative">
           <h1 data-hero="title" className="max-w-[14ch] text-hero font-extrabold tracking-[-0.035em] [text-shadow:0_2px_28px_rgb(0_0_0/0.4)]">
-            Stay somewhere{' '}
-            <span className="font-script text-[1.15em] font-normal tracking-normal">worth the trip</span>
+            Stay somewhere <span className="font-script text-[1.15em] font-normal tracking-normal">worth the trip</span>
           </h1>
           <p data-hero="lead" className="mt-5 max-w-[38ch] text-lg text-white sm:text-xl [text-shadow:0_1px_14px_rgb(0_0_0/0.5)]">
             Cabins, villas and city lofts from hosts who know the neighbourhood.
@@ -139,42 +177,61 @@ export default function Home() {
             title="Popular destinations"
             action={
               <Button to="/destinations" variant="secondary">
-                All {destinations.length} destinations
+                {destinationTotal > 6 ? `All ${destinationTotal} destinations` : 'All destinations'}
               </Button>
             }
           >
             Start with a place, then narrow down by dates and guests.
           </SectionHead>
-          <div data-reveal="cards" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {destinations.slice(0, 6).map((d, i) => (
-              <Link
-                key={d.name}
-                to={`/properties?destination=${encodeURIComponent(d.name)}`}
-                data-motion="tile"
-                className={cx(
-                  'group relative isolate flex aspect-4/3 items-end overflow-hidden rounded-panel bg-lagoon-900 text-white no-underline',
-                  i === 0 && 'lg:col-span-2 lg:row-span-2 lg:aspect-auto lg:min-h-90',
-                )}
-              >
-                {/* Decorative: the destination name beside it already labels the link.
-                    The wrapper drifts slower than the page (data-parallax); the image inside zooms on hover. */}
-                <span data-parallax aria-hidden="true" className="absolute inset-x-0 -inset-y-[8%]">
-                  <Img src={d.image} alt="" className="size-full object-cover transition-transform duration-900 ease-in-out group-hover:scale-105" />
-                </span>
-                <span aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-transparent from-40% to-lagoon-900/80 transition-opacity duration-700 group-hover:opacity-90" />
-                <span
-                  aria-hidden="true"
-                  className="absolute top-4 right-4 grid size-10 translate-y-2 scale-75 place-items-center rounded-full bg-white text-ink opacity-0 shadow-card transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:scale-100 group-focus-visible:opacity-100"
-                >
-                  <ArrowUpRight size={18} />
-                </span>
-                <span className="relative flex flex-col px-5 py-4 transition-transform duration-700 ease-out group-hover:-translate-y-1 sm:px-6 sm:py-5">
-                  <strong className={cx('font-display tracking-tight', i === 0 ? 'text-display' : 'text-[1.375rem]')}>{d.name}</strong>
-                  <small className="mt-0.5 text-sm text-white/90">{d.tagline}</small>
-                </span>
-              </Link>
-            ))}
-          </div>
+          {destLoading ? (
+            <DestinationGridSkeleton count={6} />
+          ) : (
+            <DataState
+              error={destError}
+              onRetry={reloadDestinations}
+              empty={!destinations.length}
+              emptyTitle="No destinations yet"
+              emptyMessage="Check back soon."
+            >
+              <div data-reveal="cards" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {destinations.slice(0, 6).map((d, i) => (
+                  <Link
+                    key={d.name}
+                    to={`/properties?destination=${encodeURIComponent(d.name)}`}
+                    data-motion="tile"
+                    className={cx(
+                      'group relative isolate flex aspect-4/3 items-end overflow-hidden rounded-panel bg-lagoon-900 text-white no-underline',
+                      i === 0 && 'lg:col-span-2 lg:row-span-2 lg:aspect-auto lg:min-h-90',
+                    )}
+                  >
+                    {/* Decorative: the destination name beside it already labels the link.
+                      The wrapper drifts slower than the page (data-parallax); the image inside zooms on hover. */}
+                    <span data-parallax aria-hidden="true" className="absolute inset-x-0 -inset-y-[8%]">
+                      <Img
+                        src={d.image}
+                        alt=""
+                        className="size-full object-cover transition-transform duration-900 ease-in-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                      />
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-linear-to-b from-transparent from-40% to-lagoon-900/80 transition-opacity duration-700 group-hover:opacity-90"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-4 right-4 grid size-10 translate-y-2 scale-75 place-items-center rounded-full bg-white text-ink opacity-0 shadow-card transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:scale-100 group-focus-visible:opacity-100"
+                    >
+                      <ArrowUpRight size={18} />
+                    </span>
+                    <span className="relative flex flex-col px-5 py-4 transition-transform duration-700 ease-out group-hover:-translate-y-1 sm:px-6 sm:py-5">
+                      <strong className={cx('font-display tracking-tight', i === 0 ? 'text-display' : 'text-[1.375rem]')}>{d.name}</strong>
+                      <small className="mt-0.5 text-sm text-white/90">{d.tagline}</small>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </DataState>
+          )}
         </div>
       </section>
 
@@ -189,20 +246,45 @@ export default function Home() {
               </Button>
             }
           >
-            Highly rated places guests keep coming back to.
+            Highly rated places and the newest additions from our hosts.
           </SectionHead>
-          <PropertyGrid properties={featuredProperties} />
+          {featuredLoading ? (
+            <PropertyGrid properties={[]} loading />
+          ) : (
+            <DataState
+              error={featuredError}
+              onRetry={reloadFeatured}
+              empty={!featured?.length}
+              emptyTitle="No stays listed yet"
+              emptyMessage="Hosts are still adding their places. Check back soon."
+            >
+              <PropertyGrid properties={featured ?? []} />
+            </DataState>
+          )}
+        </div>
+      </section>
+
+      <section aria-labelledby="why-heading" className="py-16 sm:py-24">
+        <div className="page-container">
+          <div data-reveal="heading" className="mb-10">
+            <Eyebrow>Why book here</Eyebrow>
+            <h2 id="why-heading" className="text-display">
+              How Blüdhaven works
+            </h2>
+            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">A few plain facts about how stays, prices and reviews are handled.</p>
+          </div>
+          <WhyBook />
         </div>
       </section>
 
       <section aria-labelledby="testimonials-heading" className="py-16 sm:py-24">
         <div className="page-container">
           <div data-reveal="heading" className="mb-10">
-            <Eyebrow>Guest stories</Eyebrow>
+            <Eyebrow>Illustrative only</Eyebrow>
             <h2 id="testimonials-heading" className="text-display">
-              Guests love the trip
+              Example guest stories
             </h2>
-            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Short notes from people who stayed with our hosts.</p>
+            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Sample notes showing the kind of feedback a guest might share. They are not real reviews.</p>
           </div>
           <Testimonials />
         </div>
@@ -215,7 +297,7 @@ export default function Home() {
             <h2 id="faq-heading" className="text-display">
               Questions, answered
             </h2>
-            <p className="mt-3 max-w-[40ch] text-lg text-ink-soft">The basics of booking, paying and hosting on Blüdhaven.</p>
+            <p className="mt-3 max-w-[40ch] text-lg text-ink-soft">The basics of booking and hosting on Blüdhaven.</p>
           </div>
           <div data-reveal="section">
             <Faq />
@@ -236,11 +318,11 @@ export default function Home() {
               <Eyebrow light>Hosting</Eyebrow>
               <h2 className="text-display">Have a spare home or cabin?</h2>
               <p className="mt-4 max-w-[46ch] text-lg text-white/85">
-                List it with Blüdhaven, set your own price and calendar, and welcome guests on your terms.
+                Host accounts are set up by invitation from the Blüdhaven team. See the plans, get in touch, and list your place at a nightly price you set.
               </p>
             </div>
-            <Button to="/register" variant="accent" size="lg">
-              Start hosting
+            <Button to="/plans" variant="accent" size="lg">
+              See host plans
             </Button>
           </div>
         </div>

@@ -1,15 +1,13 @@
-import { useRef, useState } from 'react'
-import { Info } from 'lucide-react'
+import { useRef } from 'react'
 import Button from './Button'
+import FormAlert from './FormAlert'
 import useScrollReveal from '../hooks/useScrollReveal'
 
 /**
- * Shared shell for the Login and Register screens: heading, form, preview
- * notice, submit button and a footer link. Real submission arrives with the
- * authentication phase; for now submitting only shows the notice.
+ * Shared shell for the Login, Register and Forgot-password screens: heading, form, error box, submit button and a
+ * footer link. The page owns the fields and the request; this owns the layout.
  */
-export default function AuthCard({ title, lead, submitLabel, notice, footer, children }) {
-  const [submitted, setSubmitted] = useState(false)
+export default function AuthCard({ title, lead, submitLabel, onSubmit, submitting = false, error, notice, footer, children }) {
   const ref = useRef(null)
   useScrollReveal(ref)
 
@@ -18,21 +16,12 @@ export default function AuthCard({ title, lead, submitLabel, notice, footer, chi
       <h1 className="text-display">{title}</h1>
       <p className="mt-2 mb-8 text-ink-soft">{lead}</p>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          setSubmitted(true)
-        }}
-        className="flex flex-col gap-4"
-      >
+      <form onSubmit={onSubmit} noValidate={false} className="flex flex-col gap-4">
+        <FormAlert tone="info">{notice}</FormAlert>
         {children}
-        {submitted && (
-          <p role="status" className="flex items-center gap-2 rounded-card bg-tint px-4 py-3 text-sm text-ink">
-            <Info size={16} aria-hidden="true" /> {notice}
-          </p>
-        )}
-        <Button type="submit" block size="lg">
-          {submitLabel}
+        <FormAlert>{error}</FormAlert>
+        <Button type="submit" block size="lg" disabled={submitting} aria-busy={submitting}>
+          {submitting ? 'Please wait…' : submitLabel}
         </Button>
       </form>
 

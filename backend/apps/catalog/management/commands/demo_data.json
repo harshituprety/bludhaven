@@ -1,0 +1,905 @@
+{
+ "destinations": [
+  {
+   "name": "Manali",
+   "state": "Himachal Pradesh",
+   "tagline": "Pine forests and snow peaks",
+   "display_order": 0
+  },
+  {
+   "name": "Goa",
+   "state": "Goa",
+   "tagline": "Beach villas and slow evenings",
+   "display_order": 1
+  },
+  {
+   "name": "Munnar",
+   "state": "Kerala",
+   "tagline": "Tea hills and misty mornings",
+   "display_order": 2
+  },
+  {
+   "name": "Udaipur",
+   "state": "Rajasthan",
+   "tagline": "Lakeside palaces and old lanes",
+   "display_order": 3
+  },
+  {
+   "name": "Jaisalmer",
+   "state": "Rajasthan",
+   "tagline": "Golden dunes and desert camps",
+   "display_order": 4
+  },
+  {
+   "name": "Mumbai",
+   "state": "Maharashtra",
+   "tagline": "Harbour views and city energy",
+   "display_order": 5
+  },
+  {
+   "name": "Rishikesh",
+   "state": "Uttarakhand",
+   "tagline": "River bends and quiet retreats",
+   "display_order": 6
+  },
+  {
+   "name": "Coorg",
+   "state": "Karnataka",
+   "tagline": "Coffee estates and green valleys",
+   "display_order": 7
+  },
+  {
+   "name": "Delhi",
+   "state": "Delhi",
+   "tagline": "Mughal monuments and street food",
+   "display_order": 8
+  },
+  {
+   "name": "Jaipur",
+   "state": "Rajasthan",
+   "tagline": "Pink palaces and busy bazaars",
+   "display_order": 9
+  },
+  {
+   "name": "Agra",
+   "state": "Uttar Pradesh",
+   "tagline": "The Taj and Mughal gardens",
+   "display_order": 10
+  },
+  {
+   "name": "Varanasi",
+   "state": "Uttar Pradesh",
+   "tagline": "Ghats, temples and river dawns",
+   "display_order": 11
+  },
+  {
+   "name": "Kolkata",
+   "state": "West Bengal",
+   "tagline": "Colonial streets and tea houses",
+   "display_order": 12
+  },
+  {
+   "name": "Chennai",
+   "state": "Tamil Nadu",
+   "tagline": "Temples, beaches and filter coffee",
+   "display_order": 13
+  },
+  {
+   "name": "Bengaluru",
+   "state": "Karnataka",
+   "tagline": "Garden city and craft breweries",
+   "display_order": 14
+  },
+  {
+   "name": "Hyderabad",
+   "state": "Telangana",
+   "tagline": "Pearls, palaces and biryani",
+   "display_order": 15
+  },
+  {
+   "name": "Pondicherry",
+   "state": "Puducherry",
+   "tagline": "French lanes and seafront cafes",
+   "display_order": 16
+  },
+  {
+   "name": "Kochi",
+   "state": "Kerala",
+   "tagline": "Fishing nets and spice-trade history",
+   "display_order": 17
+  },
+  {
+   "name": "Alleppey",
+   "state": "Kerala",
+   "tagline": "Backwater cruises and coconut groves",
+   "display_order": 18
+  },
+  {
+   "name": "Darjeeling",
+   "state": "West Bengal",
+   "tagline": "Toy trains and tea gardens",
+   "display_order": 19
+  },
+  {
+   "name": "Shimla",
+   "state": "Himachal Pradesh",
+   "tagline": "Colonial hill-station charm",
+   "display_order": 20
+  },
+  {
+   "name": "Leh",
+   "state": "Ladakh",
+   "tagline": "High passes and old monasteries",
+   "display_order": 21
+  },
+  {
+   "name": "Srinagar",
+   "state": "Jammu and Kashmir",
+   "tagline": "Dal Lake and Mughal gardens",
+   "display_order": 22
+  },
+  {
+   "name": "Gangtok",
+   "state": "Sikkim",
+   "tagline": "Monasteries and Kanchenjunga views",
+   "display_order": 23
+  },
+  {
+   "name": "Ooty",
+   "state": "Tamil Nadu",
+   "tagline": "Nilgiri hills and a toy train",
+   "display_order": 24
+  },
+  {
+   "name": "Mysuru",
+   "state": "Karnataka",
+   "tagline": "Palaces, silk and sandalwood",
+   "display_order": 25
+  },
+  {
+   "name": "Amritsar",
+   "state": "Punjab",
+   "tagline": "The Golden Temple and Punjabi feasts",
+   "display_order": 26
+  },
+  {
+   "name": "Jodhpur",
+   "state": "Rajasthan",
+   "tagline": "The blue city under Mehrangarh",
+   "display_order": 27
+  }
+ ],
+ "properties": [
+  {
+   "title": "Pinecrest Mountain Retreat",
+   "city": "Manali",
+   "location": "Manali, Himachal Pradesh",
+   "type": "CABIN",
+   "price": 4500,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 2,
+   "amenities": [
+    "Wi-Fi",
+    "Fireplace",
+    "Kitchen",
+    "Mountain view",
+    "Free parking",
+    "Heating"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Aarav Mehta",
+   "photo": "pinecrest-mountain-cabin.webp",
+   "photo_alt": "Pine-panelled bedroom with a navy headboard and a window onto a Himalayan valley"
+  },
+  {
+   "title": "Palm Courtyard Villa",
+   "city": "Goa",
+   "location": "Assagao, Goa",
+   "type": "VILLA",
+   "price": 9800,
+   "guests": 8,
+   "bedrooms": 4,
+   "bathrooms": 4,
+   "amenities": [
+    "Private pool",
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Free parking",
+    "Pet friendly",
+    "Barbecue"
+   ],
+   "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
+   "host": "Sofia D’Souza",
+   "photo": "palm-courtyard-pool-villa.webp",
+   "photo_alt": "White two-storey villa with red-tiled roofs, hanging egg chairs and a turquoise pool"
+  },
+  {
+   "title": "Tea Estate Cottage",
+   "city": "Munnar",
+   "location": "Munnar, Kerala",
+   "type": "COTTAGE",
+   "price": 3600,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 1,
+   "amenities": [
+    "Wi-Fi",
+    "Kitchen",
+    "Garden view",
+    "Free parking",
+    "Breakfast included"
+   ],
+   "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
+   "host": "Nikhil Menon",
+   "photo": "tea-estate-hills.webp",
+   "photo_alt": "Rows of tea bushes on rolling green hills with sunbeams over the Munnar valley"
+  },
+  {
+   "title": "Lakeside Haveli Suite",
+   "city": "Udaipur",
+   "location": "Udaipur, Rajasthan",
+   "type": "APARTMENT",
+   "price": 7200,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Lake view",
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Breakfast included",
+    "Workspace"
+   ],
+   "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
+   "host": "Meera Rathore",
+   "photo": "lakeside-haveli-twilight.webp",
+   "photo_alt": "Lantern-lit terrace with wicker chairs and parasols beside Lake Pichola, Udaipur"
+  },
+  {
+   "title": "Dune Camp Tent House",
+   "city": "Jaisalmer",
+   "location": "Sam Dunes, Jaisalmer",
+   "type": "TENT",
+   "price": 5400,
+   "guests": 3,
+   "bedrooms": 1,
+   "bathrooms": 1,
+   "amenities": [
+    "Air conditioning",
+    "Breakfast included",
+    "Bonfire",
+    "Free parking"
+   ],
+   "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
+   "host": "Karan Singh",
+   "photo": "dune-camp-desert.webp",
+   "photo_alt": "A row of white luxury desert tents glowing orange at dusk on the sand, Jaisalmer"
+  },
+  {
+   "title": "Harbour Loft Apartment",
+   "city": "Mumbai",
+   "location": "Bandra West, Mumbai",
+   "type": "APARTMENT",
+   "price": 8600,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Workspace",
+    "Washer",
+    "Gym access"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Zara Qureshi",
+   "photo": "harbour-loft-skyline.webp",
+   "photo_alt": "Bedroom with a red padded headboard and a floor-to-ceiling window over the city skyline"
+  },
+  {
+   "title": "Riverbend Bamboo Hut",
+   "city": "Rishikesh",
+   "location": "Rishikesh, Uttarakhand",
+   "type": "CABIN",
+   "price": 2800,
+   "guests": 2,
+   "bedrooms": 1,
+   "bathrooms": 1,
+   "amenities": [
+    "River view",
+    "Wi-Fi",
+    "Yoga deck",
+    "Breakfast included"
+   ],
+   "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
+   "host": "Ishaan Rawat",
+   "photo": "riverbend-green-river.webp",
+   "photo_alt": "Round bamboo room with a blue daybed, kilim rug and windows onto the forest"
+  },
+  {
+   "title": "Sunset Cliff Villa",
+   "city": "Goa",
+   "location": "Vagator, Goa",
+   "type": "VILLA",
+   "price": 12500,
+   "guests": 10,
+   "bedrooms": 5,
+   "bathrooms": 5,
+   "amenities": [
+    "Private pool",
+    "Sea view",
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Barbecue",
+    "Free parking"
+   ],
+   "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
+   "host": "Rohan Fernandes",
+   "photo": "sunset-cliff-palm-villa.webp",
+   "photo_alt": "A sunken jacuzzi on a terrace facing the sea at sunset in Goa"
+  },
+  {
+   "title": "Snowline A-Frame",
+   "city": "Manali",
+   "location": "Old Manali, Himachal Pradesh",
+   "type": "CABIN",
+   "price": 6100,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 1,
+   "amenities": [
+    "Fireplace",
+    "Wi-Fi",
+    "Mountain view",
+    "Heating",
+    "Hot tub"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Tenzin Dorje",
+   "photo": "snowline-cabin-snow.webp",
+   "photo_alt": "Timber A-frame cabins with white chairs on the lawn below a pine-covered mountain"
+  },
+  {
+   "title": "Coffee Plantation Bungalow",
+   "city": "Coorg",
+   "location": "Madikeri, Coorg",
+   "type": "COTTAGE",
+   "price": 5200,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Garden view",
+    "Wi-Fi",
+    "Kitchen",
+    "Fireplace",
+    "Pet friendly",
+    "Free parking"
+   ],
+   "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
+   "host": "Lakshmi Ganapathy"
+  },
+  {
+   "title": "Pichola View Penthouse",
+   "city": "Udaipur",
+   "location": "Lal Ghat, Udaipur",
+   "type": "APARTMENT",
+   "price": 10400,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Lake view",
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Workspace",
+    "Washer"
+   ],
+   "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
+   "host": "Devika Joshi"
+  },
+  {
+   "title": "Golden Hour Desert Haveli",
+   "city": "Jaisalmer",
+   "location": "Fort Road, Jaisalmer",
+   "type": "VILLA",
+   "price": 8300,
+   "guests": 7,
+   "bedrooms": 4,
+   "bathrooms": 3,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Breakfast included",
+    "Free parking"
+   ],
+   "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
+   "host": "Pratap Bhati"
+  },
+  {
+   "title": "Lutyens Courtyard Apartment",
+   "city": "Delhi",
+   "location": "Hauz Khas, New Delhi",
+   "type": "APARTMENT",
+   "price": 6800,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Workspace",
+    "Washer",
+    "Free parking"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Anaya Kapoor",
+   "photo": "delhi-courtyard-apartment.webp",
+   "photo_alt": "Bedroom with a green velvet headboard, white bedding and a sheer-curtained window"
+  },
+  {
+   "title": "Pink City Haveli Retreat",
+   "city": "Jaipur",
+   "location": "Civil Lines, Jaipur",
+   "type": "VILLA",
+   "price": 9400,
+   "guests": 8,
+   "bedrooms": 4,
+   "bathrooms": 4,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Breakfast included",
+    "Free parking",
+    "Garden view"
+   ],
+   "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
+   "host": "Vikram Shekhawat"
+  },
+  {
+   "title": "Taj View Heritage Suite",
+   "city": "Agra",
+   "location": "Taj Ganj, Agra",
+   "type": "APARTMENT",
+   "price": 5900,
+   "guests": 3,
+   "bedrooms": 1,
+   "bathrooms": 1,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Breakfast included",
+    "Workspace"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Farah Siddiqui",
+   "photo": "agra-heritage-suite.webp",
+   "photo_alt": "Bright bedroom with a yellow upholstered bed, rolled towels and a framed painting"
+  },
+  {
+   "title": "Ghat-side Heritage Home",
+   "city": "Varanasi",
+   "location": "Assi Ghat, Varanasi",
+   "type": "APARTMENT",
+   "price": 4200,
+   "guests": 5,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "River view",
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Breakfast included"
+   ],
+   "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
+   "host": "Ramesh Tripathi"
+  },
+  {
+   "title": "Colonial Mansion Flat",
+   "city": "Kolkata",
+   "location": "Park Street, Kolkata",
+   "type": "APARTMENT",
+   "price": 4900,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 1,
+   "amenities": [
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Workspace",
+    "Breakfast included"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Ananya Sen",
+   "photo": "kolkata-colonial-flat.webp",
+   "photo_alt": "Black front door with stained glass under a red-brick arch hung with wisteria"
+  },
+  {
+   "title": "Marina Beach Studio",
+   "city": "Chennai",
+   "location": "Besant Nagar, Chennai",
+   "type": "APARTMENT",
+   "price": 3900,
+   "guests": 2,
+   "bedrooms": 1,
+   "bathrooms": 1,
+   "amenities": [
+    "Sea view",
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Washer"
+   ],
+   "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
+   "host": "Karthik Raman",
+   "photo": "chennai-beach-studio.webp",
+   "photo_alt": "Sage-green bedroom with a light wood double bed, bedside lamps and a framed seaside painting"
+  },
+  {
+   "title": "Garden City Loft",
+   "city": "Bengaluru",
+   "location": "Indiranagar, Bengaluru",
+   "type": "APARTMENT",
+   "price": 5600,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Workspace",
+    "Garden view",
+    "Gym access"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Neha Iyer",
+   "photo": "bengaluru-garden-loft.webp",
+   "photo_alt": "Bright loft with exposed brick-vault ceiling, a wooden dining table with flowers and a bed beyond"
+  },
+  {
+   "title": "Nizami Courtyard House",
+   "city": "Hyderabad",
+   "location": "Banjara Hills, Hyderabad",
+   "type": "VILLA",
+   "price": 7700,
+   "guests": 7,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Garden view",
+    "Free parking",
+    "Barbecue"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Imran Qureshi"
+  },
+  {
+   "title": "French Quarter Villa",
+   "city": "Pondicherry",
+   "location": "White Town, Pondicherry",
+   "type": "VILLA",
+   "price": 8800,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Garden view",
+    "Breakfast included",
+    "Pet friendly"
+   ],
+   "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
+   "host": "Claire Dupont"
+  },
+  {
+   "title": "Fort Kochi Heritage Homestay",
+   "city": "Kochi",
+   "location": "Fort Kochi, Kerala",
+   "type": "COTTAGE",
+   "price": 4600,
+   "guests": 5,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Wi-Fi",
+    "Air conditioning",
+    "Breakfast included",
+    "Garden view",
+    "Kitchen"
+   ],
+   "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
+   "host": "Thomas Mathew"
+  },
+  {
+   "title": "Backwater Houseboat Stay",
+   "city": "Alleppey",
+   "location": "Punnamada, Alleppey",
+   "type": "HOUSEBOAT",
+   "price": 11200,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Lake view",
+    "Air conditioning",
+    "Kitchen",
+    "Breakfast included",
+    "Wi-Fi"
+   ],
+   "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
+   "host": "Biju Varghese"
+  },
+  {
+   "title": "Himalayan Tea Garden Cottage",
+   "city": "Darjeeling",
+   "location": "Happy Valley, Darjeeling",
+   "type": "COTTAGE",
+   "price": 4800,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 1,
+   "amenities": [
+    "Mountain view",
+    "Heating",
+    "Fireplace",
+    "Breakfast included",
+    "Wi-Fi"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Pema Lepcha"
+  },
+  {
+   "title": "Deodar Hill Cottage",
+   "city": "Shimla",
+   "location": "Mashobra, Shimla",
+   "type": "COTTAGE",
+   "price": 5300,
+   "guests": 5,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Fireplace",
+    "Heating",
+    "Mountain view",
+    "Kitchen",
+    "Free parking",
+    "Wi-Fi"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Sanjay Thakur"
+  },
+  {
+   "title": "Ladakh Valley Guesthouse",
+   "city": "Leh",
+   "location": "Changspa, Leh",
+   "type": "CABIN",
+   "price": 4400,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 2,
+   "amenities": [
+    "Mountain view",
+    "Heating",
+    "Breakfast included",
+    "Wi-Fi",
+    "Free parking"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Stanzin Angmo"
+  },
+  {
+   "title": "Dal Lake Houseboat",
+   "city": "Srinagar",
+   "location": "Dal Lake, Srinagar",
+   "type": "HOUSEBOAT",
+   "price": 7900,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Lake view",
+    "Heating",
+    "Breakfast included",
+    "Wi-Fi"
+   ],
+   "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
+   "host": "Bilal Mir"
+  },
+  {
+   "title": "Kanchenjunga View Chalet",
+   "city": "Gangtok",
+   "location": "Deorali, Gangtok",
+   "type": "CABIN",
+   "price": 5700,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 1,
+   "amenities": [
+    "Mountain view",
+    "Heating",
+    "Wi-Fi",
+    "Breakfast included",
+    "Fireplace"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Tashi Bhutia"
+  },
+  {
+   "title": "Nilgiri Pine Cottage",
+   "city": "Ooty",
+   "location": "Coonoor Road, Ooty",
+   "type": "COTTAGE",
+   "price": 4100,
+   "guests": 5,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Fireplace",
+    "Heating",
+    "Garden view",
+    "Kitchen",
+    "Free parking",
+    "Pet friendly"
+   ],
+   "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
+   "host": "Deepa Krishnan"
+  },
+  {
+   "title": "Palace Lane Heritage Villa",
+   "city": "Mysuru",
+   "location": "Lakshmipuram, Mysuru",
+   "type": "VILLA",
+   "price": 6300,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Garden view",
+    "Breakfast included",
+    "Free parking"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Arjun Gowda"
+  },
+  {
+   "title": "Golden Temple Lane Home",
+   "city": "Amritsar",
+   "location": "Heritage Walk, Amritsar",
+   "type": "APARTMENT",
+   "price": 3800,
+   "guests": 5,
+   "bedrooms": 2,
+   "bathrooms": 2,
+   "amenities": [
+    "Wi-Fi",
+    "Air conditioning",
+    "Kitchen",
+    "Breakfast included"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Harpreet Sandhu",
+   "photo": "amritsar-heritage-home.webp",
+   "photo_alt": "Family room with three beds, wooden headboard and houseplants by a large window"
+  },
+  {
+   "title": "Blue City Rooftop Haveli",
+   "city": "Jodhpur",
+   "location": "Brahmpuri, Jodhpur",
+   "type": "VILLA",
+   "price": 7400,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Breakfast included",
+    "Kitchen",
+    "Workspace"
+   ],
+   "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
+   "host": "Mahendra Rathore"
+  },
+  {
+   "title": "Palolem Beach Hut",
+   "city": "Goa",
+   "location": "Palolem, Goa",
+   "type": "CABIN",
+   "price": 3300,
+   "guests": 2,
+   "bedrooms": 1,
+   "bathrooms": 1,
+   "amenities": [
+    "Sea view",
+    "Wi-Fi",
+    "Breakfast included",
+    "Free parking"
+   ],
+   "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
+   "host": "Agnelo Pereira"
+  },
+  {
+   "title": "Apple Orchard Cottage",
+   "city": "Manali",
+   "location": "Naggar, Manali",
+   "type": "COTTAGE",
+   "price": 4900,
+   "guests": 4,
+   "bedrooms": 2,
+   "bathrooms": 1,
+   "amenities": [
+    "Mountain view",
+    "Fireplace",
+    "Heating",
+    "Kitchen",
+    "Garden view",
+    "Free parking"
+   ],
+   "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
+   "host": "Rekha Negi"
+  },
+  {
+   "title": "Amer Fort View Penthouse",
+   "city": "Jaipur",
+   "location": "Amer Road, Jaipur",
+   "type": "APARTMENT",
+   "price": 8100,
+   "guests": 5,
+   "bedrooms": 3,
+   "bathrooms": 2,
+   "amenities": [
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Workspace",
+    "Washer",
+    "Breakfast included"
+   ],
+   "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
+   "host": "Siddharth Rawat"
+  },
+  {
+   "title": "Juhu Sea-Facing Apartment",
+   "city": "Mumbai",
+   "location": "Juhu, Mumbai",
+   "type": "APARTMENT",
+   "price": 11800,
+   "guests": 6,
+   "bedrooms": 3,
+   "bathrooms": 3,
+   "amenities": [
+    "Sea view",
+    "Air conditioning",
+    "Wi-Fi",
+    "Kitchen",
+    "Workspace",
+    "Gym access",
+    "Washer"
+   ],
+   "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
+   "host": "Pooja Mehra",
+   "photo": "juhu-sea-apartment.webp",
+   "photo_alt": "Modern bedroom with a dark padded headboard, white bedding and floor-to-ceiling curtains"
+  }
+ ]
+}
