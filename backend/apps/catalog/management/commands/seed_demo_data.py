@@ -6,7 +6,7 @@
 Refuses to run unless DJANGO_DEBUG is on. Safe to run repeatedly (existing rows are reused).
 The data is the sample content the React prototype used to hard-code. Nothing here is a business rule: the one
 "Demo plan" has no limits so the sample Hosts can list properties; a real deployment creates its own plans.
-Sample properties get a cover ``PropertyImage`` whose URL is
+The 16 sample properties that had a photo in the prototype get that photo as a cover ``PropertyImage`` whose URL is
 ``/demo-photos/<file>`` (the files live in ``frontend/public/demo-photos/`` and are served by the frontend; ``storage_key``
 is blank, so nothing is ever deleted from Cloudinary for them). The other properties have no photos; real photos come
 from Cloudinary uploads.
@@ -86,7 +86,6 @@ class Command(BaseCommand):
                 prop.amenities.set([amenities[a] for a in p["amenities"]])
                 made += 1
             photos += self._add_cover_photo(prop, p)
-            photos += self._add_extra_photos(prop, p)
 
         if options["accounts"]:
             for email, name, role in (
@@ -105,7 +104,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"{len(destinations)} destinations, {len(amenities)} amenities, {len(hosts)} hosts, {made} new properties, {photos} new demo photos."))
 
     @staticmethod
-    def _create_demo_image(prop, name, alt, position):
+    def _add_cover_photo(prop, data):
+        """Give a sample property its prototype photo, once. Never touches a property that already has photos."""
+        name = data.get("photo")
+        if not name or prop.images.exists():
+            return 0
         width = height = size = None
         path = DEMO_PHOTO_DIR / name
         if path.exists():  # facts about the file; the seed still works if the frontend folder is not alongside
@@ -116,35 +119,9 @@ class Command(BaseCommand):
             size = path.stat().st_size
         PropertyImage.objects.create(
             property=prop, url=DEMO_PHOTO_URL + name, storage_key="", width=width, height=height, size_bytes=size,
-            format=Path(name).suffix.lstrip(".").lower(), alt_text=alt, position=position,
+            format=Path(name).suffix.lstrip(".").lower(), alt_text=data.get("photo_alt", ""), position=0,
         )
-
-    @classmethod
-    def _add_cover_photo(cls, prop, data):
-        """Give a sample property its demo photo, once. Never touches a property that already has photos."""
-        name = data.get("photo")
-        if not name or prop.images.exists():
-            return 0
-        cls._create_demo_image(prop, name, data.get("photo_alt", ""), 0)
         return 1
-
-    @classmethod
-    def _add_extra_photos(cls, prop, data):
-        """Add the further demo gallery photos listed for a property, once each. Skips a property that has an uploaded
-        (non-demo) photo, so real Host uploads are never mixed with demo ones."""
-        extras = data.get("photos_extra") or []
-        if not extras or prop.images.exclude(storage_key="").exists():
-            return 0
-        have = set(prop.images.values_list("url", flat=True))
-        last = prop.images.order_by("-position").first()
-        position = 0 if last is None else last.position + 1
-        added = 0
-        for extra in extras:
-            if DEMO_PHOTO_URL + extra["file"] in have:
-                continue
-            cls._create_demo_image(prop, extra["file"], extra.get("alt", ""), position + added)
-            added += 1
-        return added
 
     @staticmethod
     def _subscribe(host, plan):
