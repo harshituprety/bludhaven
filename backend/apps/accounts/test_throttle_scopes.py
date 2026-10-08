@@ -15,7 +15,7 @@ LOGIN, REFRESH, BLACKLIST = "/api/auth/token/", "/api/auth/token/refresh/", "/ap
 class ThrottleScopeTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.END_USER, email="guest@example.com")
+        self.user = make_user(Role.END_USER, verified=True, email="guest@example.com")
 
     def login(self, password=PASSWORD):
         return self.client.post(LOGIN, {"email": "guest@example.com", "password": password}, format="json")

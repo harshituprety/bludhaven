@@ -38,7 +38,7 @@ Base URL in development: `http://localhost:8000`. All bodies are JSON. Protected
 | POST | `/api/auth/verify-email/` | public | `auth` | Verify an email address with the emailed token |
 | POST | `/api/auth/resend-verification/` | public | `resend_verification` | Send a new verification email (only if the account exists and is unverified) |
 | GET | `/api/auth/csrf/` | public | `anon` | `{csrfToken}` for refresh/logout |
-| POST | `/api/auth/token/` | public | `auth` | Log in: `{access, user}` + refresh cookie |
+| POST | `/api/auth/token/` | public | `auth` | Log in: `{access, user}` + refresh cookie. 403 `email_not_verified` until the address is verified |
 | POST | `/api/auth/token/refresh/` | cookie + CSRF | `refresh` | Empty body; rotates the cookie, returns `{access}` |
 | POST | `/api/auth/token/blacklist/` | cookie + CSRF | `logout` | Log out: revoke the refresh token, clear the cookie (always 200) |
 | POST | `/api/auth/password-reset/` | public | `password_reset` | Ask for a password-reset email |
@@ -66,7 +66,7 @@ Body: `{"token": "<from the emailed link>"}`. The link looks like
 - The response never includes the address, the user or the token.
 - It is a POST on purpose, so email scanners that open links cannot verify an account.
 - A client cannot set the verified state: it is stored server-side only (`email_verified_at`), is read-only in the API and in the admin, and registration rejects attempts to send it. Super Admins created with `createsuperuser` start verified.
-- Logging in does not require a verified address. **Creating a booking does** (403 with code `email_not_verified`); browsing, favourites and reading your own bookings do not.
+- **Logging in requires a verified address.** `POST /api/auth/token/` with the right password for an unverified account answers **403** `email_not_verified` and issues no tokens, cookie or session (a wrong password still gets the usual 401, so the endpoint never reveals verification status to someone who does not know the password). The person verifies with the emailed link, or asks for a new one with `resend-verification`. Super Admins created with `createsuperuser` start verified. Booking and reviewing also still return 403 `email_not_verified` for a session that somehow belongs to an unverified account.
 
 ### Resend verification — `POST /api/auth/resend-verification/`
 

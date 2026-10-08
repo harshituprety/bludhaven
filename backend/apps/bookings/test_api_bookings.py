@@ -70,9 +70,9 @@ class BookingCreateTests(BookingTestCase):
         user.save()
         self.assertEqual(self.book(user).status_code, 201)
 
-    def test_unverified_users_can_still_log_in_browse_and_read_their_bookings(self):
+    def test_unverified_users_cannot_log_in_but_a_session_they_already_hold_can_browse_and_read_their_bookings(self):
         user = make_user(Role.END_USER, verified=False)
-        self.assertEqual(self.client.post("/api/auth/token/", {"email": user.email, "password": "a-Str0ng-test-pass"}, format="json").status_code, 200)
+        self.assertEqual(self.client.post("/api/auth/token/", {"email": user.email, "password": "a-Str0ng-test-pass"}, format="json").status_code, 403)
         self.assertEqual(self.as_(user).get("/api/properties/").status_code, 200)
         self.assertEqual(self.client.get(BOOK).status_code, 200)
         self.assertEqual(self.client.get("/api/favourites/").status_code, 200)

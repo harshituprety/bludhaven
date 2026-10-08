@@ -72,8 +72,8 @@ One project (`config`) and five apps. Views are DRF viewsets with explicit permi
 ## 2. Authentication flow
 
 1. **Register** `POST /api/auth/register/` (`email`, `full_name`, `password`; the role is always `END_USER`). A verification email is sent.
-2. **Verify email**: the link is `{FRONTEND_URL}/verify-email?token=…`. The page reads the token, removes it from the URL, and POSTs it once.
-3. **Login** `POST /api/auth/token/` returns `{access, user}` and sets the refresh cookie. The SPA keeps `access` in a module variable.
+2. **Verify email**: the link is `{FRONTEND_URL}/verify-email?token=…` (signed with `SECRET_KEY`, expires after `EMAIL_VERIFICATION_TIMEOUT_HOURS`, bound to the user id and address). The page reads the token, removes it from the URL, and POSTs it once. Host sign-up (`/host/onboarding`) works the same way: no session until the link has been opened, then the Host logs in at `/host/login` and resumes the draft.
+3. **Login** `POST /api/auth/token/` is refused with 403 `email_not_verified` (and no tokens) until the address is verified; the login pages then offer to resend the email. Once verified it returns `{access, user}` and sets the refresh cookie. The SPA keeps `access` in a module variable.
 4. **Calls** carry `Authorization: Bearer <access>`. Access tokens last 15 minutes.
 5. **401** → the Axios interceptor performs **one shared** refresh (`POST /api/auth/token/refresh/`, empty body), then retries the original request once. Parallel 401s wait for the same refresh. Refresh/login/logout/CSRF calls are never themselves refreshed (no loops).
 6. **Page reload**: access token is gone, so the app calls refresh (cookie) and then `GET /api/auth/me/`. A non-secret flag `bh_has_session` in `localStorage` only says "try to restore"; it holds no token. A refresh that is rejected (401/403) ends the session; a network error keeps it.
@@ -211,7 +211,7 @@ Frontend: set `VITE_API_BASE_URL` and `VITE_SITE_URL`, then `npm run build`.
 | No role change through unsafe endpoints | register/`PATCH /me` reject extra keys; no API creates or promotes a Super Admin; Super Admin can only set HOST/END_USER |
 | Host ownership | queryset/object permissions + RBAC tests for every Host-vs-Host case |
 | Subscription limits | enforced server-side on create and upload, against the property owner's plan |
-| Email verification | enforced for booking and reviewing (`email_not_verified`) |
+| Email verification | required to log in (403 `email_not_verified`, checked after the password so it reveals nothing without it); also still enforced for booking, reviewing and Host plan purchase |
 | CSRF for cookie refresh/logout | `X-CSRFToken` + trusted `Origin` required (`csrf_failed` otherwise) |
 | CORS | explicit origin list only; wildcard refused; no defaults in production |
 | `DEBUG` | defaults to off; `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` required when off (app refuses to start) |

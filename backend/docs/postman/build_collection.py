@@ -113,7 +113,7 @@ Run order: Register -> Verify email (link from the console/email) -> Login -> Ge
         notes="Also sets an httpOnly CSRF cookie. The token in the body is what you send as `X-CSRFToken`."),
     req("Login", "POST", "/api/auth/token/", auth=PUBLIC, body={"email": "{{userEmail}}", "password": "{{userPassword}}"},
         ok=(200, {"access": "<jwt>", "user": {"id": 1, "email": "host@example.com", "full_name": "Host", "role": "HOST", "is_email_verified": True, "date_joined": "2026-10-01T10:00:00+05:30"}}),
-        errs=[err(401, "no_active_account", "wrong password, unknown email or inactive user - always the same answer"), err(429, "throttled", "scope `auth`")],
+        errs=[err(401, "no_active_account", "wrong password, unknown email or inactive user - always the same answer"), err(403, "email_not_verified", "right password but the email address is not verified yet; no tokens are issued - open the emailed link or call Resend verification"), err(429, "throttled", "scope `auth`")],
         tests=set_var("accessToken", "j.access"),
         notes="Sets the `bludhaven_refresh` httpOnly cookie. **There is no `refresh` key in the response.**"),
     req("Login as Super Admin", "POST", "/api/auth/token/", auth=PUBLIC, body={"email": "{{adminEmail}}", "password": "{{adminPassword}}"},

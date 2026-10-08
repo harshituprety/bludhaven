@@ -25,7 +25,7 @@ def expired(token_cls, user):
 class LoginTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.HOST, email="host@example.com")
+        self.user = make_user(Role.HOST, verified=True, email="host@example.com")
 
     def login(self, **body):
         return self.client.post(LOGIN, {"email": "host@example.com", "password": PASSWORD, **body}, format="json")
@@ -100,7 +100,7 @@ class RefreshAndLogoutTests(ApiTestCase):
 
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.END_USER, email="guest@example.com")
+        self.user = make_user(Role.END_USER, verified=True, email="guest@example.com")
 
     def refresh(self, token=None, path=REFRESH):
         if token is not None:
@@ -209,7 +209,7 @@ class CsrfAndCorsTests(ApiTestCase):
 
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.END_USER, email="guest@example.com")
+        self.user = make_user(Role.END_USER, verified=True, email="guest@example.com")
         self.strict = APIClient(enforce_csrf_checks=True)
         self.strict.cookies[settings.REFRESH_COOKIE_NAME] = str(RefreshToken.for_user(self.user))
 
@@ -266,7 +266,7 @@ class CsrfAndCorsTests(ApiTestCase):
 class CurrentUserAndTokenTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.HOST, email="host@example.com")
+        self.user = make_user(Role.HOST, verified=True, email="host@example.com")
 
     def test_me_without_a_token_is_401(self):
         r = self.client.get(ME)

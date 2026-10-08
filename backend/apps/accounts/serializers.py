@@ -1,10 +1,20 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError
+from django.contrib.auth.models import update_last_login
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenObtainSerializer
+from rest_framework_simplejwt.settings import api_settings
 
 from .models import Role, User
+
+
+class EmailNotVerified(PermissionDenied):
+    """403 ``email_not_verified``: the password was right but the address has not been confirmed yet."""
+
+    default_detail = "Please verify your email address before logging in. We sent you a link when you signed up."
+    default_code = "email_not_verified"
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,9 +37,17 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        data = super().validate(attrs)
-        data["user"] = UserSerializer(self.user).data
-        return data
+        # Step 1: the credentials (wrong password / inactive account -> the usual 401, so this endpoint never
+        # reveals whether an address is verified to someone who does not know the password).
+        TokenObtainSerializer.validate(self, attrs)
+        # Step 2: only now, for the genuine owner, require a confirmed address. Nothing is minted before this.
+        if not self.user.is_email_verified:
+            raise EmailNotVerified()
+        # Step 3: tokens, exactly as SimpleJWT's own TokenObtainPairSerializer does it.
+        refresh = self.get_token(self.user)
+        if api_settings.UPDATE_LAST_LOGIN:
+            update_last_login(None, self.user)
+        return {"refresh": str(refresh), "access": str(refresh.access_token), "user": UserSerializer(self.user).data}
 
 
 class RegisterSerializer(serializers.Serializer):

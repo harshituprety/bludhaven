@@ -519,7 +519,7 @@
                 "value": "application/json"
               }
             ],
-            "description": "**POST** `{{baseUrl}}/api/auth/token/`\n\n**Authentication:** None (public)\n**Required role:** anyone\n**Headers:** `Accept: application/json`; `Content-Type: application/json`\n\n**Request body (JSON):**\n```json\n{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}\n```\n\n**Success:** 200 with:\n```json\n{\n  \"access\": \"<jwt>\",\n  \"user\": {\n    \"id\": 1,\n    \"email\": \"host@example.com\",\n    \"full_name\": \"Host\",\n    \"role\": \"HOST\",\n    \"is_email_verified\": true,\n    \"date_joined\": \"2026-10-01T10:00:00+05:30\"\n  }\n}\n```\n\n**Important errors** (shape `{\"error\": {\"code\", \"message\", \"details?\"}}`):\n- 401 `no_active_account` - wrong password, unknown email or inactive user - always the same answer\n- 429 `throttled` - scope `auth`\n\nSets the `bludhaven_refresh` httpOnly cookie. **There is no `refresh` key in the response.**",
+            "description": "**POST** `{{baseUrl}}/api/auth/token/`\n\n**Authentication:** None (public)\n**Required role:** anyone\n**Headers:** `Accept: application/json`; `Content-Type: application/json`\n\n**Request body (JSON):**\n```json\n{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}\n```\n\n**Success:** 200 with:\n```json\n{\n  \"access\": \"<jwt>\",\n  \"user\": {\n    \"id\": 1,\n    \"email\": \"host@example.com\",\n    \"full_name\": \"Host\",\n    \"role\": \"HOST\",\n    \"is_email_verified\": true,\n    \"date_joined\": \"2026-10-01T10:00:00+05:30\"\n  }\n}\n```\n\n**Important errors** (shape `{\"error\": {\"code\", \"message\", \"details?\"}}`):\n- 401 `no_active_account` - wrong password, unknown email or inactive user - always the same answer\n- 403 `email_not_verified` - right password but the email address is not verified yet; no tokens are issued - open the emailed link or call Resend verification\n- 429 `throttled` - scope `auth`\n\nSets the `bludhaven_refresh` httpOnly cookie. **There is no `refresh` key in the response.**",
             "url": {
               "raw": "{{baseUrl}}/api/auth/token/",
               "host": [
@@ -583,6 +583,25 @@
                 }
               ],
               "body": "{\n  \"error\": {\n    \"code\": \"no_active_account\",\n    \"message\": \"wrong password, unknown email or inactive user - always the same answer\"\n  }\n}"
+            },
+            {
+              "name": "403 email_not_verified",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/token/"
+                }
+              },
+              "status": "email_not_verified",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"email_not_verified\",\n    \"message\": \"right password but the email address is not verified yet; no tokens are issued - open the emailed link or call Resend verification\"\n  }\n}"
             },
             {
               "name": "429 throttled",

@@ -1,4 +1,5 @@
 import json
+from django.utils import timezone
 
 from apps.core.testing import PASSWORD, ApiTestCase
 from apps.core.throttling import RegisterRateThrottle
@@ -36,8 +37,9 @@ class RegisterApiTests(ApiTestCase):
         self.assertTrue(user.password.startswith("pbkdf2_sha256$"))
         self.assertTrue(user.check_password(VALID["password"]))
 
-    def test_new_user_can_log_in_and_is_an_end_user(self):
+    def test_new_user_can_log_in_once_verified_and_is_an_end_user(self):
         self.register()
+        User.objects.filter(email="new.guest@example.com").update(email_verified_at=timezone.now())
         r = self.client.post("/api/auth/token/", {"email": "new.guest@example.com", "password": VALID["password"]}, format="json")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["user"]["role"], Role.END_USER)

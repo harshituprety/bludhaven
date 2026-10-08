@@ -47,7 +47,7 @@ class UserModelTests(TestCase):
 class AuthApiTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.HOST, email="host@example.com")
+        self.user = make_user(Role.HOST, verified=True, email="host@example.com")
 
     def login(self, email="host@example.com", password=PASSWORD):
         return self.client.post("/api/auth/token/", {"email": email, "password": password}, format="json")

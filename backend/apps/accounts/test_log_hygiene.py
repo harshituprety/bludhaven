@@ -11,7 +11,7 @@ from .models import Role
 
 class LogHygieneTests(ApiTestCase):
     def test_credentials_and_tokens_never_reach_the_logs(self):
-        make_user(Role.END_USER, email="guest@example.com")
+        make_user(Role.END_USER, verified=True, email="guest@example.com")
         wrong, new = "wrong-password-1", "brand-New-Str0ng-pass-4"
         records = []
 

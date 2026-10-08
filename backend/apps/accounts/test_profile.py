@@ -18,7 +18,7 @@ NEW = "a-Different-Str0ng-pass-9"
 class ProfileUpdateTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.HOST, email="host@example.com", full_name="Old Name")
+        self.user = make_user(Role.HOST, verified=True, email="host@example.com", full_name="Old Name")
         self.authenticate(self.user)
 
     def test_full_name_can_be_changed_and_is_trimmed(self):
@@ -74,7 +74,7 @@ class ProfileUpdateTests(ApiTestCase):
 class ChangePasswordTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.END_USER, email="guest@example.com")
+        self.user = make_user(Role.END_USER, verified=True, email="guest@example.com")
         self.authenticate(self.user)
 
     def change(self, current=PASSWORD, new=NEW):

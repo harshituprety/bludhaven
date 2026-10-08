@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core import mail, signing
 from django.utils import timezone
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 from apps.core.testing import PASSWORD, ApiTestCase, make_user
 from apps.core.throttling import AuthRateThrottle, PasswordResetRateThrottle
@@ -175,11 +176,67 @@ class VerificationTests(ApiTestCase):
         self.assertFalse(make_user(Role.END_USER).is_email_verified)
         self.assertFalse(make_user(Role.HOST).is_email_verified)
 
-    def test_unverified_users_can_still_sign_in(self):
+    def login(self, password=None, email="ada@example.com"):
+        return self.client.post(LOGIN, {"email": email, "password": password or SIGNUP["password"]}, format="json")
+
+    def test_an_unverified_account_cannot_log_in_and_gets_no_tokens(self):
+        user, _ = self.register()
+        r = self.login()
+        self.assertEqual(r.status_code, 403)
+        self.assertEqual(r.json()["error"]["code"], "email_not_verified")
+        body = r.content.decode().lower()
+        for secret in ("access", "refresh", "token"):
+            self.assertNotIn(f'"{secret}"', body)
+        self.assertNotIn(settings.REFRESH_COOKIE_NAME, r.cookies)
+        # Nothing was minted, and a refused login is not a login.
+        self.assertFalse(OutstandingToken.objects.filter(user=user).exists())
+        user.refresh_from_db()
+        self.assertIsNone(user.last_login)
+
+    def test_a_wrong_password_never_reveals_whether_the_account_is_verified(self):
         self.register()
-        r = self.client.post(LOGIN, {"email": "ada@example.com", "password": SIGNUP["password"]}, format="json")
+        r = self.login(password="not-the-password")
+        self.assertEqual((r.status_code, r.json()["error"]["code"]), (401, "no_active_account"))
+        unknown = self.login(email="nobody@example.com")
+        self.assertEqual((unknown.status_code, unknown.json()["error"]["code"]), (401, "no_active_account"))
+
+    def test_the_account_can_log_in_once_the_emailed_link_has_been_used(self):
+        _, token = self.token_for_new_user()
+        self.assertEqual(self.login().status_code, 403)
+        self.assertEqual(self.client.post(VERIFY, {"token": token}, format="json").status_code, 200)
+        r = self.login()
         self.assertEqual(r.status_code, 200)
-        self.assertFalse(r.json()["user"]["is_email_verified"])
+        self.assertTrue(r.json()["user"]["is_email_verified"])
+        self.assertIn(settings.REFRESH_COOKIE_NAME, r.cookies)
+
+    def test_an_expired_link_leaves_the_account_locked_until_a_new_one_is_used(self):
+        user, token = self.token_for_new_user()
+        with patch.object(settings, "EMAIL_VERIFICATION_TIMEOUT", -1):
+            self.assertEqual(self.client.post(VERIFY, {"token": token}, format="json").status_code, 400)
+        self.assertEqual(self.login().status_code, 403)
+        self.client.post("/api/auth/resend-verification/", {"email": SIGNUP["email"]}, format="json")
+        _, params = link_params(mail.outbox[-1])
+        self.assertEqual(self.client.post(VERIFY, {"token": params["token"]}, format="json").status_code, 200)
+        self.assertEqual(self.login().status_code, 200)
+
+    def test_a_link_for_one_account_cannot_verify_another(self):
+        _, token = self.token_for_new_user()
+        other = make_user(Role.END_USER, email="other@example.com")
+        self.client.post(VERIFY, {"token": token}, format="json")
+        other.refresh_from_db()
+        self.assertFalse(other.is_email_verified)
+        self.assertEqual(self.login(password=PASSWORD, email="other@example.com").status_code, 403)
+
+    def test_super_admins_created_on_the_server_can_log_in(self):
+        make_user(Role.SUPER_ADMIN, email="root@example.com")
+        self.assertEqual(self.login(password=PASSWORD, email="root@example.com").status_code, 200)
+
+    def test_the_verification_email_is_sent_for_host_sign_ups_too(self):
+        r = self.client.post("/api/auth/register-host/", SIGNUP, format="json")
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertFalse(r.json()["is_email_verified"])
+        self.assertEqual(self.login().status_code, 403)
 
     # --- logging -----------------------------------------------------------------
 
@@ -203,7 +260,7 @@ class VerificationTests(ApiTestCase):
 class PasswordResetRequestTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.END_USER, email="guest@example.com")
+        self.user = make_user(Role.END_USER, verified=True, email="guest@example.com")
 
     def request(self, email="guest@example.com"):
         return self.client.post(RESET, {"email": email}, format="json")
@@ -280,7 +337,7 @@ class PasswordResetRequestTests(ApiTestCase):
 class PasswordResetConfirmTests(ApiTestCase):
     def setUp(self):
         super().setUp()
-        self.user = make_user(Role.HOST, email="host@example.com")
+        self.user = make_user(Role.HOST, verified=True, email="host@example.com")
         self.uid, self.token = tokens.make_reset_credentials(self.user)
 
     def confirm(self, uid=None, token=None, new_password=NEW_PASSWORD):
