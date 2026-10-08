@@ -23,6 +23,9 @@ export const getAvailability = (propertyId, { from, to } = {}, signal) =>
 export const createProperty = async (body) => (await api.post('/api/properties/', body)).data
 export const updateProperty = async (id, body) => (await api.patch(`/api/properties/${id}/`, body)).data
 export const deleteProperty = (id) => api.delete(`/api/properties/${id}/`)
+/** Draft -> bookable. The server re-checks plan, limits, photos, amenities and completeness. */
+export const publishProperty = async (id) => (await api.post(`/api/properties/${id}/publish/`)).data
+export const unpublishProperty = async (id) => (await api.post(`/api/properties/${id}/unpublish/`)).data
 
 // Property images (multipart upload; never JSON, never a URL) ----------------------------------------------------------
 export const listImages = (propertyId, signal) => get(`/api/properties/${propertyId}/images/`, { page_size: 100 }, signal)
@@ -40,6 +43,8 @@ export async function uploadImage(propertyId, file, { altText = '', position, on
   return data
 }
 export const updateImage = async (propertyId, imageId, body) => (await api.patch(`/api/properties/${propertyId}/images/${imageId}/`, body)).data
+/** Set the whole photo order in one call; the first id becomes the cover. */
+export const reorderImages = async (propertyId, order) => (await api.post(`/api/properties/${propertyId}/images/reorder/`, { order })).data
 export const deleteImage = (propertyId, imageId) => api.delete(`/api/properties/${propertyId}/images/${imageId}/`)
 
 // Favourites ---------------------------------------------------------------------------------------------------------------

@@ -190,7 +190,13 @@
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
    "host": "Aarav Mehta",
    "photo": "pinecrest-mountain-cabin.webp",
-   "photo_alt": "Pine-panelled bedroom with a navy headboard and a window onto a Himalayan valley"
+   "photo_alt": "Pine-panelled bedroom with a navy headboard and a window onto a Himalayan valley",
+   "photos_extra": [
+    {
+     "file": "pinecrest-mountain-retreat-2.webp",
+     "alt": "Lounge with a fireplace and tall windows onto the mountains"
+    }
+   ]
   },
   {
    "title": "Palm Courtyard Villa",
@@ -276,7 +282,17 @@
    "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
    "host": "Karan Singh",
    "photo": "dune-camp-desert.webp",
-   "photo_alt": "A row of white luxury desert tents glowing orange at dusk on the sand, Jaisalmer"
+   "photo_alt": "A row of white luxury desert tents glowing orange at dusk on the sand, Jaisalmer",
+   "photos_extra": [
+    {
+     "file": "dune-camp-tent-house-2.webp",
+     "alt": "Canvas tent house in front of a fort wall"
+    },
+    {
+     "file": "dune-camp-tent-house-3.webp",
+     "alt": "Cluster of white canvas tents seen from above"
+    }
+   ]
   },
   {
    "title": "Harbour Loft Apartment",
@@ -318,7 +334,13 @@
    "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
    "host": "Ishaan Rawat",
    "photo": "riverbend-green-river.webp",
-   "photo_alt": "Round bamboo room with a blue daybed, kilim rug and windows onto the forest"
+   "photo_alt": "Round bamboo room with a blue daybed, kilim rug and windows onto the forest",
+   "photos_extra": [
+    {
+     "file": "riverbend-bamboo-hut-2.webp",
+     "alt": "Open yoga hall with floor-to-ceiling windows"
+    }
+   ]
   },
   {
    "title": "Sunset Cliff Villa",
@@ -362,7 +384,13 @@
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
    "host": "Tenzin Dorje",
    "photo": "snowline-cabin-snow.webp",
-   "photo_alt": "Timber A-frame cabins with white chairs on the lawn below a pine-covered mountain"
+   "photo_alt": "Timber A-frame cabins with white chairs on the lawn below a pine-covered mountain",
+   "photos_extra": [
+    {
+     "file": "snowline-a-frame-2.webp",
+     "alt": "Attic bedroom with a wide mountain window"
+    }
+   ]
   },
   {
    "title": "Coffee Plantation Bungalow",
@@ -382,7 +410,23 @@
     "Free parking"
    ],
    "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
-   "host": "Lakshmi Ganapathy"
+   "host": "Lakshmi Ganapathy",
+   "photo": "coffee-plantation-bungalow.webp",
+   "photo_alt": "Timber bungalow with an infinity pool among coffee plantation trees",
+   "photos_extra": [
+    {
+     "file": "coffee-plantation-bungalow-2.webp",
+     "alt": "Stone-walled dining room with glass walls facing the forest"
+    },
+    {
+     "file": "coffee-plantation-bungalow-3.webp",
+     "alt": "Wooden chalet under tall trees on a plantation slope"
+    },
+    {
+     "file": "coffee-plantation-bungalow-4.webp",
+     "alt": "Thatched cottages around a green pond in a shaded estate"
+    }
+   ]
   },
   {
    "title": "Pichola View Penthouse",
@@ -402,7 +446,9 @@
     "Washer"
    ],
    "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
-   "host": "Devika Joshi"
+   "host": "Devika Joshi",
+   "photo": "pichola-view-penthouse.webp",
+   "photo_alt": "Rooftop view over Lake Pichola towards the City Palace and the hills"
   },
   {
    "title": "Golden Hour Desert Haveli",
@@ -421,7 +467,9 @@
     "Free parking"
    ],
    "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
-   "host": "Pratap Bhati"
+   "host": "Pratap Bhati",
+   "photo": "golden-hour-desert-haveli.webp",
+   "photo_alt": "Sandstone haveli courtyard with arcades and a lawn"
   },
   {
    "title": "Lutyens Courtyard Apartment",
@@ -463,7 +511,15 @@
     "Garden view"
    ],
    "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
-   "host": "Vikram Shekhawat"
+   "host": "Vikram Shekhawat",
+   "photo": "pink-city-haveli-retreat.webp",
+   "photo_alt": "Painted haveli hall with arches and carved screens",
+   "photos_extra": [
+    {
+     "file": "pink-city-haveli-retreat-2.webp",
+     "alt": "Heritage bedroom with carved wood bed and painted arches"
+    }
+   ]
   },
   {
    "title": "Taj View Heritage Suite",
@@ -483,7 +539,17 @@
    "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
    "host": "Farah Siddiqui",
    "photo": "agra-heritage-suite.webp",
-   "photo_alt": "Bright bedroom with a yellow upholstered bed, rolled towels and a framed painting"
+   "photo_alt": "Bright bedroom with a yellow upholstered bed, rolled towels and a framed painting",
+   "photos_extra": [
+    {
+     "file": "taj-view-heritage-suite-2.webp",
+     "alt": "Colourful bedroom with block-print bedding"
+    },
+    {
+     "file": "taj-view-heritage-suite-3.webp",
+     "alt": "Poolside dining table set in a courtyard"
+    }
+   ]
   },
   {
    "title": "Ghat-side Heritage Home",
@@ -502,7 +568,9 @@
     "Breakfast included"
    ],
    "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
-   "host": "Ramesh Tripathi"
+   "host": "Ramesh Tripathi",
+   "photo": "ghat-side-heritage-home.webp",
+   "photo_alt": "Heritage bedroom with arched mirror and warm lighting"
   },
   {
    "title": "Colonial Mansion Flat",
@@ -523,7 +591,13 @@
    "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
    "host": "Ananya Sen",
    "photo": "kolkata-colonial-flat.webp",
-   "photo_alt": "Black front door with stained glass under a red-brick arch hung with wisteria"
+   "photo_alt": "Black front door with stained glass under a red-brick arch hung with wisteria",
+   "photos_extra": [
+    {
+     "file": "colonial-mansion-flat-2.webp",
+     "alt": "Colonial living room with timber beams and tall windows"
+    }
+   ]
   },
   {
    "title": "Marina Beach Studio",
@@ -544,7 +618,13 @@
    "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
    "host": "Karthik Raman",
    "photo": "chennai-beach-studio.webp",
-   "photo_alt": "Sage-green bedroom with a light wood double bed, bedside lamps and a framed seaside painting"
+   "photo_alt": "Sage-green bedroom with a light wood double bed, bedside lamps and a framed seaside painting",
+   "photos_extra": [
+    {
+     "file": "marina-beach-studio-2.webp",
+     "alt": "Bright bedroom with a wide window and sea light"
+    }
+   ]
   },
   {
    "title": "Garden City Loft",
@@ -586,7 +666,9 @@
     "Barbecue"
    ],
    "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
-   "host": "Imran Qureshi"
+   "host": "Imran Qureshi",
+   "photo": "nizami-courtyard-house.webp",
+   "photo_alt": "Ornately painted heritage suite with arched alcoves"
   },
   {
    "title": "French Quarter Villa",
@@ -606,7 +688,15 @@
     "Pet friendly"
    ],
    "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
-   "host": "Claire Dupont"
+   "host": "Claire Dupont",
+   "photo": "french-quarter-villa.webp",
+   "photo_alt": "Cream colonial house with a shaded veranda and plants",
+   "photos_extra": [
+    {
+     "file": "french-quarter-villa-2.webp",
+     "alt": "Loft living space with a wooden staircase"
+    }
+   ]
   },
   {
    "title": "Fort Kochi Heritage Homestay",
@@ -625,7 +715,9 @@
     "Kitchen"
    ],
    "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
-   "host": "Thomas Mathew"
+   "host": "Thomas Mathew",
+   "photo": "fort-kochi-heritage-homestay.webp",
+   "photo_alt": "Tiled-roof homestay veranda with dining table and plants"
   },
   {
    "title": "Backwater Houseboat Stay",
@@ -644,7 +736,9 @@
     "Wi-Fi"
    ],
    "description": "Wide windows frame the water from sunrise to dusk. Walk to the old town, then come back to a quiet, cool, beautifully lit home.",
-   "host": "Biju Varghese"
+   "host": "Biju Varghese",
+   "photo": "backwater-houseboat-stay.webp",
+   "photo_alt": "Traditional Kerala house on the edge of the backwaters"
   },
   {
    "title": "Himalayan Tea Garden Cottage",
@@ -663,7 +757,9 @@
     "Wi-Fi"
    ],
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
-   "host": "Pema Lepcha"
+   "host": "Pema Lepcha",
+   "photo": "himalayan-tea-garden-cottage.webp",
+   "photo_alt": "Colourful timber lodge at dusk with Himalayan sky"
   },
   {
    "title": "Deodar Hill Cottage",
@@ -683,7 +779,23 @@
     "Wi-Fi"
    ],
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
-   "host": "Sanjay Thakur"
+   "host": "Sanjay Thakur",
+   "photo": "deodar-hill-cottage.webp",
+   "photo_alt": "Timber hill house with a red roof and a wide lawn",
+   "photos_extra": [
+    {
+     "file": "deodar-hill-cottage-2.webp",
+     "alt": "White hill cottage with climbing plants and balconies"
+    },
+    {
+     "file": "deodar-hill-cottage-3.webp",
+     "alt": "Pine-panelled bedroom with floral bedding"
+    },
+    {
+     "file": "deodar-hill-cottage-4.webp",
+     "alt": "Balcony table with a view over a forested valley"
+    }
+   ]
   },
   {
    "title": "Ladakh Valley Guesthouse",
@@ -702,7 +814,9 @@
     "Free parking"
    ],
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
-   "host": "Stanzin Angmo"
+   "host": "Stanzin Angmo",
+   "photo": "ladakh-valley-guesthouse.webp",
+   "photo_alt": "Wooden veranda looking over the Ladakh mountains"
   },
   {
    "title": "Dal Lake Houseboat",
@@ -739,7 +853,15 @@
     "Fireplace"
    ],
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
-   "host": "Tashi Bhutia"
+   "host": "Tashi Bhutia",
+   "photo": "kanchenjunga-view-chalet.webp",
+   "photo_alt": "Screen-sized window framing a Himalayan mountain range",
+   "photos_extra": [
+    {
+     "file": "kanchenjunga-view-chalet-2.webp",
+     "alt": "Room with a wide window above a misty mountain valley"
+    }
+   ]
   },
   {
    "title": "Nilgiri Pine Cottage",
@@ -759,7 +881,15 @@
     "Pet friendly"
    ],
    "description": "Tucked into green hills with birdsong at breakfast. Slow mornings on the veranda, local produce in the kitchen and plenty of trails nearby.",
-   "host": "Deepa Krishnan"
+   "host": "Deepa Krishnan",
+   "photo": "nilgiri-pine-cottage.webp",
+   "photo_alt": "Long colonial bungalow with a lawn among tall pines",
+   "photos_extra": [
+    {
+     "file": "nilgiri-pine-cottage-2.webp",
+     "alt": "Garden cottage glowing among large trees at night"
+    }
+   ]
   },
   {
    "title": "Palace Lane Heritage Villa",
@@ -779,7 +909,15 @@
     "Free parking"
    ],
    "description": "A bright, well-planned home close to cafes, galleries and the waterfront – a comfortable base for a few days in the city.",
-   "host": "Arjun Gowda"
+   "host": "Arjun Gowda",
+   "photo": "palace-lane-heritage-villa.webp",
+   "photo_alt": "Heritage palace in warm light on a hillside",
+   "photos_extra": [
+    {
+     "file": "palace-lane-heritage-villa-2.webp",
+     "alt": "Library lounge with carved furniture and warm lamps"
+    }
+   ]
   },
   {
    "title": "Golden Temple Lane Home",
@@ -818,7 +956,9 @@
     "Workspace"
    ],
    "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
-   "host": "Mahendra Rathore"
+   "host": "Mahendra Rathore",
+   "photo": "blue-city-rooftop-haveli.webp",
+   "photo_alt": "Pillared heritage lounge with chandeliers and antique seating"
   },
   {
    "title": "Palolem Beach Hut",
@@ -836,7 +976,9 @@
     "Free parking"
    ],
    "description": "A short barefoot walk from the water, with shaded courtyards, an open kitchen and a pool that catches the late afternoon light.",
-   "host": "Agnelo Pereira"
+   "host": "Agnelo Pereira",
+   "photo": "palolem-beach-hut.webp",
+   "photo_alt": "Terraced stay with a pool and green hills behind"
   },
   {
    "title": "Apple Orchard Cottage",
@@ -856,7 +998,9 @@
     "Free parking"
    ],
    "description": "Wake up above the tree line in a timber-framed home with floor-to-ceiling windows, a stone fireplace and a deck made for cold-weather sunsets.",
-   "host": "Rekha Negi"
+   "host": "Rekha Negi",
+   "photo": "apple-orchard-cottage.webp",
+   "photo_alt": "Wooden cottage with glowing windows in a field at dusk"
   },
   {
    "title": "Amer Fort View Penthouse",
@@ -876,7 +1020,9 @@
     "Breakfast included"
    ],
    "description": "Warm sandstone by day, a sky full of stars by night. Settle in around the fire after a sunset dune walk.",
-   "host": "Siddharth Rawat"
+   "host": "Siddharth Rawat",
+   "photo": "amer-fort-view-penthouse.webp",
+   "photo_alt": "Roof terrace with white seating and tiled floor"
   },
   {
    "title": "Juhu Sea-Facing Apartment",

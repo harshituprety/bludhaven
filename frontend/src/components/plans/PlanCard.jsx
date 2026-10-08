@@ -25,7 +25,7 @@ export default function PlanCard({ plan }) {
   return (
     <article className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-6 transition-transform duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:transform-none">
       <header>
-        <h3 className="text-xl font-bold">{plan.name}</h3>
+        <h2 className="text-xl font-bold">{plan.name}</h2>
         {plan.description && <p className="mt-1 text-sm text-ink-soft">{plan.description}</p>}
       </header>
       <p>

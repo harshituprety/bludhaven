@@ -9,3 +9,5 @@ web-font files here with exactly these names (woff2 preferred):
 - CircularXX-Black.woff2   (800-900)
 
 Until they exist, the site uses Figtree (bundled via @fontsource-variable/figtree), a similar geometric sans.
+
+The font rules are added automatically at dev/build time for whichever of these files exist (restart the dev server after adding them).

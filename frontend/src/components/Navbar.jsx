@@ -72,7 +72,7 @@ export default function Navbar() {
           <NavLink to="/destinations" className={linkClass}>
             Destinations
           </NavLink>
-          <NavLink to="/plans" className={linkClass}>
+          <NavLink to="/host/onboarding" className={linkClass}>
             Become a host
           </NavLink>
           <div className="mt-4 flex items-center gap-2 lg:mt-0 lg:ml-auto max-lg:*:flex-1">

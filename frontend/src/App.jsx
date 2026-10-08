@@ -29,6 +29,7 @@ const HostProperties = lazy(() => import('./pages/host/HostProperties'))
 const PropertyForm = lazy(() => import('./pages/host/PropertyForm'))
 const HostBookings = lazy(() => import('./pages/host/HostBookings'))
 const HostSubscription = lazy(() => import('./pages/host/HostSubscription'))
+const HostOnboarding = lazy(() => import('./pages/host/HostOnboarding'))
 const HostPlans = lazy(() => import('./pages/host/HostPlans'))
 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="properties" element={<Listings />} />
         <Route path="properties/:id" element={<PropertyDetails />} />
         <Route path="plans" element={<Plans />} />
+        <Route path="host/onboarding" element={<HostOnboarding />} />
 
         {/* Any signed-in user */}
         <Route element={<RequireRole />}>

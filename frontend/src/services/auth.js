@@ -5,6 +5,12 @@ export async function register({ email, fullName, password }) {
   return data
 }
 
+/** Host onboarding sign-up. The server assigns the HOST role; the client never sends one. */
+export async function registerHost({ email, fullName, password }) {
+  const { data } = await authClient.post('/api/auth/register-host/', { email, full_name: fullName, password })
+  return data
+}
+
 /** Logs in. The refresh token arrives as an httpOnly cookie; only the access token and user are in the body. */
 export async function login({ email, password }) {
   const { data } = await authClient.post('/api/auth/token/', { email, password })

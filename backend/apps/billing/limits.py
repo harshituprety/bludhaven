@@ -17,12 +17,14 @@ listings and bookings but cannot add properties or photos. Payment status is inf
 """
 
 from django.db.models import Count, Max, Q
+from django.conf import settings
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from .models import Subscription
 
-FEATURE_KEYS = {"max_properties", "max_images_per_property"}
+FEATURE_KEYS = {"max_properties", "max_images_per_property", "premium_amenities"}
+BOOLEAN_KEYS = {"premium_amenities"}  # true/false instead of a count
 
 
 def validate_features(features):
@@ -32,6 +34,10 @@ def validate_features(features):
     if unknown:
         raise ValidationError(f"Unknown feature(s): {', '.join(unknown)}. Allowed: {', '.join(sorted(FEATURE_KEYS))}.")
     for key, value in features.items():
+        if key in BOOLEAN_KEYS:
+            if not isinstance(value, bool):
+                raise ValidationError(f"{key} must be true or false.")
+            continue
         if isinstance(value, bool) or not isinstance(value, int) or value < 0 or value > 1_000_000:
             raise ValidationError(f"{key} must be a whole number between 0 and 1000000.")
     return features
@@ -59,7 +65,7 @@ def plan_blockers(user, plan):
     """Reasons ``user`` cannot move onto ``plan`` without already being over its limits (empty list if none)."""
     reasons = []
     max_properties = plan.features.get("max_properties")
-    properties = user.properties.count()
+    properties = _published(user).count()
     if max_properties is not None and properties > max_properties:
         reasons.append(f"You have {properties} properties but {plan.name} allows {max_properties}.")
     max_images = plan.features.get("max_images_per_property")
@@ -68,6 +74,17 @@ def plan_blockers(user, plan):
         if most > max_images:
             reasons.append(f"One of your properties has {most} photos but {plan.name} allows {max_images} per property.")
     return reasons
+
+
+def _published(user):
+    from apps.catalog.models import Property
+
+    return user.properties.filter(status=Property.Status.PUBLISHED)
+
+
+def allows_premium_amenities(user):
+    sub = current_subscription(user)
+    return bool(sub and sub.plan.features.get("premium_amenities"))
 
 
 def _require(owner):
@@ -83,14 +100,32 @@ def ensure_can_add_property(owner):
     """Call inside a transaction that holds a lock on the owner row, so concurrent creates cannot overshoot."""
     sub = _require(owner)
     limit = sub.plan.features.get("max_properties")
-    if limit is not None and owner.properties.count() >= limit:
+    if limit is not None and _published(owner).count() >= limit:
         raise PermissionDenied(f"Your plan allows {limit} propert{'y' if limit == 1 else 'ies'}.", code="plan_limit_reached")
 
 
+def ensure_can_add_draft(owner):
+    """A Host may keep a few unpublished drafts before choosing a plan. Drafts do not count toward the plan's property limit."""
+    from apps.catalog.models import Property
+
+    cap = settings.MAX_DRAFTS_PER_HOST
+    if owner.properties.filter(status=Property.Status.DRAFT).count() >= cap:
+        raise PermissionDenied(f"You can keep at most {cap} unpublished drafts. Publish or delete one first.", code="draft_limit_reached")
+
+
 def ensure_can_add_image(prop):
-    """Call inside a transaction that holds a lock on the property row."""
-    sub = _require(prop.owner)
-    limit = sub.plan.features.get("max_images_per_property")
+    """Call inside a transaction that holds a lock on the property row.
+
+    A published property needs a current plan. A draft may take photos before a plan is chosen (up to ``DRAFT_MAX_IMAGES``);
+    a plan, once there, sets the limit.
+    """
+    sub = current_subscription(prop.owner)
+    if sub is None:
+        if prop.status != prop.Status.DRAFT:
+            _require(prop.owner)
+        limit = settings.DRAFT_MAX_IMAGES
+    else:
+        limit = sub.plan.features.get("max_images_per_property")
     if limit is not None and prop.images.count() >= limit:
         raise PermissionDenied(f"Your plan allows {limit} image{'' if limit == 1 else 's'} per property.", code="plan_limit_reached")
 
@@ -100,7 +135,7 @@ def usage(user):
     sub = current_subscription(user)
     features = sub.plan.features if sub else {}
     return {
-        "properties": {"used": user.properties.count(), "limit": features.get("max_properties")},
+        "properties": {"used": _published(user).count(), "limit": features.get("max_properties")},
         "max_images_per_property": features.get("max_images_per_property"),
         "status": sub.status if sub else None,
     }

@@ -37,6 +37,7 @@ from .serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     ProfileUpdateSerializer,
+    HostRegisterSerializer,
     RegisterSerializer,
     ResendVerificationSerializer,
     UserSerializer,
@@ -201,6 +202,20 @@ class RegisterView(CreateAPIView):
         user = serializer.save()
         logger.info("Registered new end user id=%s", user.pk)
         emails.send_verification_email(user)  # a mail failure is logged, never a failed sign-up
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+class RegisterHostView(RegisterView):
+    """POST {email, full_name, password} -> 201 with the new HOST. A ``role`` key is rejected like any other extra key."""
+
+    serializer_class = HostRegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        logger.info("Registered new host id=%s", user.pk)
+        emails.send_verification_email(user)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 

@@ -234,6 +234,13 @@ describe('separate login portals', () => {
     await waitFor(() => expect(getAccessToken()).toBe('acc-123'))
   })
 
+  it.each(['/login', '/plans'])('clicking "Host login" on %s goes to /host/login, not /login', async (start) => {
+    renderPortal(start)
+    await userEvent.click(await screen.findByRole('link', { name: /^host login$/i }))
+    expect(await screen.findByRole('heading', { name: /^host login$/i })).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/host\/login$/)
+  })
+
   it('Host login: /host/login + HOST lands on the Host dashboard', async () => {
     serverAccepts(USERS.host)
     renderPortal('/host/login')

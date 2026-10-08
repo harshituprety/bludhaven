@@ -76,7 +76,7 @@ class BookingSerializer(serializers.ModelSerializer):
 class BookingRequestSerializer(serializers.Serializer):
     """The four things a guest chooses. Used to ask for a price quote and to create the booking, with one set of rules."""
 
-    property = serializers.PrimaryKeyRelatedField(queryset=Property.objects.all())
+    property = serializers.PrimaryKeyRelatedField(queryset=Property.objects.filter(status=Property.Status.PUBLISHED))
     check_in = serializers.DateField()
     check_out = serializers.DateField()
     guests_count = serializers.IntegerField(min_value=1, max_value=32767)

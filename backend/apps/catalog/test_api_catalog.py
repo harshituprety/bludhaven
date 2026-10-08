@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from apps.accounts.models import Role
 from apps.bookings.models import Booking, Review
-from apps.core.testing import ApiTestCase, make_amenity, make_booking, make_destination, make_property, make_user, subscribe, FakeCloudinary, image_bytes
+from apps.core.testing import ApiTestCase, make_amenity, make_booking, make_destination, make_property, make_user, subscribe, FakeStorage, image_bytes
 
 from .models import Amenity, Destination, Favourite, Property, PropertyImage
 
@@ -375,7 +375,7 @@ class PropertyImageApiTests(CatalogTestCase):
         super().setUp()
         self.prop = make_property(owner=self.host)
         self.url = f"{PROP}{self.prop.pk}/images/"
-        self.cloud = FakeCloudinary()
+        self.cloud = FakeStorage()
         self.cloud.__enter__()
         self.addCleanup(self.cloud.__exit__)
 

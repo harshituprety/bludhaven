@@ -35,6 +35,7 @@ class PropertyFilter(filters.FilterSet):
     amenities = NumberInFilter(method="filter_amenities", help_text="Comma-separated ids; the property needs all of them.")
     min_rating = filters.NumberFilter(field_name="average_rating", lookup_expr="gte")
     owner = filters.NumberFilter(field_name="owner_id")
+    status = filters.ChoiceFilter(choices=Property.Status.choices)
     mine = filters.BooleanFilter(method="filter_mine", help_text="Only the signed-in user's own properties.")
     check_in = filters.DateFilter(method="noop")
     check_out = filters.DateFilter(method="noop")

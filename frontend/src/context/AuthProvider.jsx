@@ -79,6 +79,7 @@ export default function AuthProvider({ children }) {
       isAuthenticated: state.status === 'authenticated',
       login,
       register: authApi.register,
+      registerHost: authApi.registerHost,
       logout,
       refreshUser,
       updateProfile,

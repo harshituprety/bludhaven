@@ -5,34 +5,31 @@
 /* Design tokens. Each --color-*, --font-*, --text-*, --radius-*, --shadow-* and
    --animate-* variable below becomes a Tailwind utility (bg-lagoon-700,
    font-display, text-hero, rounded-card, shadow-card, animate-shimmer, ...). */
-/* Circular is licensed: add the files to public/fonts (see the README there). */
+/* Circular is licensed and optional. Its @font-face rules are injected by vite.config.js only for the files that
+   exist in public/fonts (see the README there), so a missing file never causes a 404 or a decode error. */
 @font-face {
   font-family: 'Circular';
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
-  src: local('Circular Book'), local('CircularXX-Book'), url('/fonts/CircularXX-Book.woff2') format('woff2');
+  src: local('Circular Book'), local('CircularXX-Book');
 }
 @font-face {
   font-family: 'Circular';
   font-style: normal;
   font-weight: 500;
-  font-display: swap;
-  src: local('Circular Medium'), local('CircularXX-Medium'), url('/fonts/CircularXX-Medium.woff2') format('woff2');
+  src: local('Circular Medium'), local('CircularXX-Medium');
 }
 @font-face {
   font-family: 'Circular';
   font-style: normal;
   font-weight: 600 700;
-  font-display: swap;
-  src: local('Circular Bold'), local('CircularXX-Bold'), url('/fonts/CircularXX-Bold.woff2') format('woff2');
+  src: local('Circular Bold'), local('CircularXX-Bold');
 }
 @font-face {
   font-family: 'Circular';
   font-style: normal;
   font-weight: 800 900;
-  font-display: swap;
-  src: local('Circular Black'), local('CircularXX-Black'), url('/fonts/CircularXX-Black.woff2') format('woff2');
+  src: local('Circular Black'), local('CircularXX-Black');
 }
 
 @theme {
@@ -124,7 +121,7 @@
   --c-brand: #0e5a63; /* brand-coloured text and icons */
   --c-tint: #eef6f6;
   --c-tint-strong: #d9ecee;
-  --c-success: #1c7c54;
+  --c-success: #166243;
   --c-danger: #b3261e;
   --c-skel-a: #e8eef0; /* skeleton base */
   --c-skel-b: #f2f6f7; /* skeleton shimmer highlight */

@@ -31,6 +31,8 @@ class Amenity(models.Model):
     """A feature a property can offer (Wi-Fi, Fireplace…). Its own table so it is shared, filterable and not repeated as text."""
 
     name = models.CharField(max_length=60, unique=True)
+    # A premium amenity can only be assigned by a Host whose current plan has the ``premium_amenities`` feature.
+    is_premium = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "amenities"
@@ -51,6 +53,10 @@ class Property(models.Model):
         TENT = "TENT", "Tent"
         HOUSEBOAT = "HOUSEBOAT", "Houseboat"
 
+    class Status(models.TextChoices):
+        DRAFT = "DRAFT", "Draft"          # visible only to its owner and Super Admins; cannot be booked
+        PUBLISHED = "PUBLISHED", "Published"
+
     # Ownership (not tenancy): a Host may only change their own properties.
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="properties")
     destination = models.ForeignKey(Destination, on_delete=models.PROTECT, related_name="properties")
@@ -63,6 +69,11 @@ class Property(models.Model):
     bedrooms = models.PositiveSmallIntegerField(default=1)
     bathrooms = models.PositiveSmallIntegerField(default=1)
     amenities = models.ManyToManyField(Amenity, blank=True, related_name="properties")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PUBLISHED)
+    # The street address is private: only the owner and Super Admins ever receive it (guests see destination + locality).
+    address_line1 = models.CharField(max_length=200, blank=True)
+    address_line2 = models.CharField(max_length=100, blank=True, help_text="Unit / apartment number.")
+    postal_code = models.CharField(max_length=12, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -70,12 +81,14 @@ class Property(models.Model):
         verbose_name_plural = "properties"
         ordering = ["-created_at"]
         constraints = [
-            models.CheckConstraint(condition=models.Q(price_per_night__gt=0), name="property_price_positive"),
+            # A draft may still have no price (0); anything published must have one.
+            models.CheckConstraint(condition=models.Q(price_per_night__gt=0) | models.Q(status="DRAFT"), name="property_price_positive"),
             models.CheckConstraint(condition=models.Q(max_guests__gte=1), name="property_max_guests_at_least_1"),
         ]
         indexes = [
             models.Index(fields=["destination", "property_type"], name="property_dest_type_idx"),
             models.Index(fields=["price_per_night"], name="property_price_idx"),
+            models.Index(fields=["status"], name="property_status_idx"),
         ]
 
     def __str__(self):

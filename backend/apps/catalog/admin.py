@@ -16,13 +16,14 @@ class DestinationAdmin(admin.ModelAdmin):
 
 @admin.register(Amenity)
 class AmenityAdmin(admin.ModelAdmin):
+    list_display = ["name", "is_premium"]
     search_fields = ["name"]
 
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ["title", "destination", "property_type", "price_per_night", "owner"]
-    list_filter = ["property_type", "destination"]
+    list_display = ["title", "destination", "property_type", "price_per_night", "owner", "status"]
+    list_filter = ["status", "property_type", "destination"]
     search_fields = ["title", "owner__email"]
     filter_horizontal = ["amenities"]
     inlines = [PropertyImageInline]

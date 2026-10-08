@@ -70,6 +70,7 @@ export default function AdminWallets() {
         <DataState loading={wallets.loading && !wallets.data} error={wallets.error} empty={wallets.data && wallets.data.results.length === 0} onRetry={wallets.reload} emptyTitle="No Host has a wallet yet" emptyMessage="A wallet appears when a Host first tops up or changes plan.">
           <DataTable
             caption="Host wallets"
+            rowKey={(w) => w.user.id}
             rows={wallets.data?.results ?? []}
             columns={[
               { key: 'host', header: 'Host', render: (w) => <><span className="font-semibold">{w.user.full_name}</span><span className="block text-sm text-ink-soft">{w.user.email}</span></> },

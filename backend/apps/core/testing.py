@@ -153,23 +153,24 @@ def image_bytes(fmt="PNG", size=(40, 30), color=(200, 30, 30)):
     return out.getvalue()
 
 
-class FakeCloudinary:
+class FakeStorage:
     """Stands in for apps.catalog.storage: records uploads and deletes, never touches the network."""
 
     def __init__(self):
-        self.uploaded, self.deleted = {}, []
+        self.uploaded, self.deleted, self.content_types = {}, [], {}
         self.fail_upload = False
 
-    def upload_image(self, data, public_id):
+    def upload_image(self, data, key, content_type=None):
         from apps.catalog.storage import StorageUnavailable
 
         if self.fail_upload:
             raise StorageUnavailable()
-        self.uploaded[public_id] = data
-        return {"public_id": public_id, "secure_url": f"https://res.cloudinary.test/demo/image/upload/{public_id}.jpg"}
+        self.uploaded[key] = data
+        self.content_types[key] = content_type
+        return {"key": key, "url": f"https://res.cloudinary.test/demo/image/upload/{key}.jpg"}
 
-    def delete_image(self, public_id):
-        self.deleted.append(public_id)
+    def delete_image(self, key):
+        self.deleted.append(key)
         return True
 
     def __enter__(self):

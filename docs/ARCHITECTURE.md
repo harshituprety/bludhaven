@@ -130,6 +130,18 @@ The booking total is computed by the backend; the frontend only displays it. See
 - `python manage.py expire_subscriptions` marks ended subscriptions EXPIRED (run daily via cron). Entitlement is also checked by date, so a missed run does not grant access.
 - UI: public `/plans`; Host `/host/subscription` (status, dates, limits, usage, billing profile); Super Admin `/admin/plans`, `/admin/subscriptions`.
 
+## 8a. Host onboarding and draft listings
+
+- **Route** `/host/onboarding` (every "Become a host" link). Existing Hosts use `/host/login`; `/login` and `/signup` remain the Guest portal.
+- **Account**: `POST /api/auth/register-host/` creates a user whose role the **server** sets to HOST (a `role` key in the body is rejected). A signed-in Guest is not converted; they must sign out first.
+- **Drafts**: `Property.status` is `DRAFT` or `PUBLISHED` (existing rows and the plain create API default to `PUBLISHED`, so the old create flow still needs a plan). Drafts are visible only to the owner and Super Admin: excluded from the public list, detail, availability, images, bookings, favourites and destination counts. A Host lists their own drafts with `GET /api/properties/?mine=true&status=DRAFT`. Drafts do not count toward `max_properties`; they are capped by `MAX_DRAFTS_PER_HOST` and, before a plan exists, `DRAFT_MAX_IMAGES` photos each.
+- **Publish**: `POST /api/properties/<id>/publish/` re-checks the active plan, `max_properties`, `max_images_per_property`, completeness (title, description, price > 0, at least one photo) and premium amenities. `POST .../unpublish/` returns a listing to draft.
+- **Photos** reuse `PropertyImage` and the Cloudinary upload (one storage system). `POST /api/properties/<id>/images/reorder/` (JSON `{"order":[ids]}`) sets positions; position 0 is the cover. Public IDs are never exposed.
+- **Premium amenities**: `Amenity.is_premium` plus plan feature `premium_amenities` (boolean). The backend rejects assigning a premium amenity unless the owner's plan allows it, and publish re-checks. Set `is_premium` in Django admin or via the amenities API (no dedicated UI yet).
+- **Private address**: street address and unit are returned only to the owner and Super Admin, never in public responses.
+- **Payment**: plan purchase reuses the billing system (`docs/PAYMENTS.md`); the email must be verified, and the plan is activated only after server-side signature/webhook verification. A failed payment leaves the listing as a draft with all data intact.
+- Settings: `MAX_DRAFTS_PER_HOST` (3), `DRAFT_MAX_IMAGES` (10).
+
 ## 9. MySQL configuration
 
 MySQL 8, utf8mb4, strict mode. Create an empty database and a dedicated user, then set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` (and optionally `DB_SSL_CA`) in `backend/.env`. There is no SQLite fallback. `python manage.py migrate` creates the schema; tests run against a temporary MySQL test database (the user needs `CREATE` on `test_<DB_NAME>`).
@@ -138,9 +150,9 @@ MySQL 8, utf8mb4, strict mode. Create an empty database and a dedicated user, th
 
 Set `CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>` on the **server only** (never in the frontend). Uploads are multipart to `POST /api/properties/<id>/images/` (field `image`), validated by file content (`IMAGE_ALLOWED_FORMATS`, `IMAGE_MAX_BYTES`, `IMAGE_MAX_PIXELS`), re-encoded, and stored under `<CLOUDINARY_ROOT_FOLDER>/hosts/<host id>/properties/<property id>/<random id>`. The API returns only `url`, `alt_text`, `position`, size facts; the Cloudinary public ID is stored in MySQL for deletion but is never returned. Without `CLOUDINARY_URL`, uploads answer 503 `storage_unavailable`.
 
-Safeguards: size cap (`IMAGE_MAX_BYTES`, also checked from `Content-Length` before reading the body), pixel cap, format allow-list decided from the file content, EXIF/appended data stripped by re-encoding, per-user upload throttle. If the database save fails after the upload, the uploaded file is deleted again (compensation); deleting an image (or a property) removes the Cloudinary file after the transaction commits. A failed Cloudinary delete is logged and never breaks the request, which can leave an orphan file.
+Safeguards: size cap (`IMAGE_MAX_BYTES`, also checked from `Content-Length` before reading the body), pixel cap, format allow-list decided from the file content, EXIF/appended data stripped by re-encoding, per-user upload throttle, server-generated IDs only. If the database save fails after the upload, the uploaded file is deleted again (compensation); deleting an image (or a property) removes the Cloudinary file after the transaction commits. A failed Cloudinary delete is logged and never breaks the request, which can leave an orphan file.
 
-> **Real Cloudinary has not been exercised by the automated tests.** They use a fake store, which proves our code paths but not your account. After deploying with real credentials run `python manage.py check_storage` (uploads and deletes a 1x1 test image and reports problems), then upload a real photo through the Host screen. Never commit `CLOUDINARY_URL`; set it in the server environment.
+> **Real Cloudinary has not been exercised by the automated tests.** They use a fake store and a mocked SDK, which prove our code paths but not your account. After deploying with real credentials run `python manage.py check_storage` (uploads a 1x1 test image, reads it back, deletes it and reports problems), then upload a real photo through the Host screen. Never commit `CLOUDINARY_URL`; set it in the server environment.
 
 ## 11. Frontend environment variables
 

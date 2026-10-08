@@ -3,7 +3,7 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from apps.bookings.models import Booking
-from apps.core.testing import FakeCloudinary, image_bytes, make_booking, make_property, subscribe
+from apps.core.testing import FakeStorage, image_bytes, make_booking, make_property, subscribe
 
 from .models import Property, PropertyImage
 from .test_api_catalog import PROP, CatalogTestCase, make_destination
@@ -37,7 +37,7 @@ class PropertyManagementMatrixTests(CatalogTestCase):
         self.assertTrue(Property.objects.filter(pk=self.prop.pk).exists())
 
     def test_super_admin_manages_images_of_any_property(self):
-        with FakeCloudinary() as cloud:
+        with FakeStorage() as cloud:
             upload = SimpleUploadedFile("a.png", image_bytes("PNG"), content_type="image/png")
             r = self.as_(self.admin).post(f"{self.url}images/", {"image": upload}, format="multipart")
             self.assertEqual(r.status_code, 201, r.content)
@@ -58,7 +58,7 @@ class PropertyManagementMatrixTests(CatalogTestCase):
 
     def test_a_host_cannot_manage_another_hosts_images(self):
         image = PropertyImage.objects.create(property=self.prop, url="https://img.example/a.jpg")
-        with FakeCloudinary() as cloud:
+        with FakeStorage() as cloud:
             upload = SimpleUploadedFile("a.png", image_bytes("PNG"), content_type="image/png")
             self.assertEqual(self.as_(self.other_host).post(f"{self.url}images/", {"image": upload}, format="multipart").status_code, 403)
             self.assertEqual(self.client.patch(f"{self.url}images/{image.pk}/", {"alt_text": "x"}, format="json").status_code, 403)

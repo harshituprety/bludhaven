@@ -318,11 +318,11 @@ export default function Home() {
               <Eyebrow light>Hosting</Eyebrow>
               <h2 className="text-display">Have a spare home or cabin?</h2>
               <p className="mt-4 max-w-[46ch] text-lg text-white/85">
-                Host accounts are set up by invitation from the Blüdhaven team. See the plans, get in touch, and list your place at a nightly price you set.
+                Create a Host account, describe your place and set a nightly price. Your listing stays a draft until you choose a plan and the payment is verified.
               </p>
             </div>
-            <Button to="/plans" variant="accent" size="lg">
-              See host plans
+            <Button to="/host/onboarding" variant="accent" size="lg">
+              List your place
             </Button>
           </div>
         </div>

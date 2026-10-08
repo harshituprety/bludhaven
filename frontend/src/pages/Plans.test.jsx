@@ -49,13 +49,15 @@ describe('Plans: how to get started, by sign-in state', () => {
   it('signed out: Host login and the guest-account option', async () => {
     renderWithAuth(<Plans />)
     expect(await screen.findByRole('link', { name: 'Host login' })).toHaveAttribute('href', '/host/login')
+    expect(screen.getByRole('link', { name: 'Become a Host' })).toHaveAttribute('href', '/host/onboarding')
     expect(screen.getByRole('link', { name: 'Create a guest account' })).toHaveAttribute('href', '/register')
   })
 
-  it('guest: explains invitations, offers log out + Host login, and hides guest sign-up', async () => {
+  it('guest: explains that Host accounts are separate, offers log out + onboarding / Host login, and hides guest sign-up', async () => {
     renderWithAuth(<Plans />, { user: USERS.guest })
     expect(await screen.findByText(/signed in as a guest/i)).toBeInTheDocument()
-    expect(screen.getByText(/created by invitation/i)).toBeInTheDocument()
+    expect(screen.getByText(/Host accounts are separate from guest accounts/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Log out and become a Host' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Log out and go to Host login' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Host login' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /create a guest account/i })).not.toBeInTheDocument()

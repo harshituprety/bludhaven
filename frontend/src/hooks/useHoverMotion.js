@@ -39,7 +39,8 @@ export default function useHoverMotion() {
       return () => {
         document.removeEventListener('pointerover', over)
         document.removeEventListener('pointerout', out)
-        gsap.set('[data-motion]', { clearProps: 'transform,boxShadow' })
+        const targets = document.querySelectorAll('[data-motion]')
+        if (targets.length) gsap.set(targets, { clearProps: 'transform,boxShadow' })
       }
     })
     return () => mm.revert()

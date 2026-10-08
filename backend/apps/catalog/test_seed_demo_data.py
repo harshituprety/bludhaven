@@ -1,4 +1,4 @@
-"""seed_demo_data: sample properties, and the 16 prototype cover photos served from /demo-photos/."""
+"""seed_demo_data: sample properties and their demo photos (16 prototype covers + supplied photos) served from /demo-photos/."""
 
 from io import StringIO
 from pathlib import Path
@@ -36,19 +36,25 @@ class SeedDemoPhotosTests(TestCase):
     def setUpTestData(cls):
         call_command("seed_demo_data", stdout=StringIO())
 
-    def test_exactly_the_sixteen_prototype_photos_are_attached(self):
+    def test_the_sixteen_prototype_photos_are_still_the_covers(self):
         self.assertEqual(Property.objects.count(), 36)
-        self.assertEqual(PropertyImage.objects.count(), 16)
-        got = {i.property.title: i.url for i in PropertyImage.objects.select_related("property")}
-        self.assertEqual(got, {title: f"/demo-photos/{name}" for title, name in EXPECTED.items()})
+        got = {i.property.title: i.url for i in PropertyImage.objects.select_related("property").filter(position=0)}
+        for title, name in EXPECTED.items():
+            self.assertEqual(got[title], f"/demo-photos/{name}", title)
 
-    def test_the_other_twenty_properties_have_no_photo(self):
-        self.assertEqual(Property.objects.filter(images__isnull=True).count(), 20)
+    def test_every_property_but_one_has_a_cover_photo(self):
+        self.assertEqual(list(Property.objects.filter(images__isnull=True).values_list("title", flat=True)), ["Dal Lake Houseboat"])
         self.assertFalse(Property.objects.filter(title__in=EXPECTED, images__isnull=True).exists())
 
-    def test_demo_photos_are_covers_with_no_storage_key(self):
+    def test_gallery_photos_follow_the_cover_in_order(self):
+        for prop in Property.objects.all():
+            positions = list(prop.images.order_by("position").values_list("position", flat=True))
+            self.assertEqual(positions, list(range(len(positions))), prop.title)
+        self.assertGreater(PropertyImage.objects.filter(position__gt=0).count(), 0)
+
+    def test_demo_photos_have_no_storage_key(self):
         for image in PropertyImage.objects.all():
-            self.assertEqual((image.position, image.storage_key), (0, ""))  # blank key: never deleted from Cloudinary
+            self.assertEqual(image.storage_key, "")  # blank key: never deleted from Cloudinary
             self.assertEqual(image.format, "webp")
             self.assertTrue(image.alt_text)
             self.assertTrue(image.width and image.height and image.size_bytes)
@@ -62,8 +68,7 @@ class SeedDemoPhotosTests(TestCase):
         ordered = list(Property.objects.order_by("created_at", "id"))
         for position in (1, 2, 3, 4, 5, 7, 8, 9):
             prop = ordered[position - 1]
-            self.assertEqual(prop.images.count(), 1, prop.title)
-            self.assertEqual(prop.images.get().url, f"/demo-photos/{EXPECTED[prop.title]}")
+            self.assertEqual(prop.images.get(position=0).url, f"/demo-photos/{EXPECTED[prop.title]}", prop.title)
 
     def test_the_api_returns_the_cover_url_and_hides_the_storage_key(self):
         r = self.client.get("/api/properties/?ordering=created_at&page_size=9")
@@ -75,15 +80,16 @@ class SeedDemoPhotosTests(TestCase):
         self.assertEqual(detail["images"][0]["url"], "/demo-photos/pinecrest-mountain-cabin.webp")
 
     def test_running_it_again_adds_nothing(self):
+        before = (Property.objects.count(), PropertyImage.objects.count())
         call_command("seed_demo_data", stdout=StringIO())
-        self.assertEqual((Property.objects.count(), PropertyImage.objects.count()), (36, 16))
+        self.assertEqual((Property.objects.count(), PropertyImage.objects.count()), before)
 
     def test_it_never_overwrites_a_property_that_already_has_photos(self):
         prop = Property.objects.get(title="Pinecrest Mountain Retreat")
         prop.images.all().delete()
         PropertyImage.objects.create(property=prop, url="https://res.cloudinary.test/x.jpg", storage_key="k", position=0)
         call_command("seed_demo_data", stdout=StringIO())
-        self.assertEqual([i.url for i in prop.images.all()], ["https://res.cloudinary.test/x.jpg"])
+        self.assertEqual([i.url for i in prop.images.all()], ["https://res.cloudinary.test/x.jpg"])  # no demo extras added either
 
     @override_settings(DEBUG=False)
     def test_it_still_refuses_to_run_outside_development(self):

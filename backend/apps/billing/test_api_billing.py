@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.accounts.models import Role
 from apps.catalog.models import PropertyImage
 from apps.core.testing import (
-    ApiTestCase, FakeCloudinary, image_bytes, make_destination, make_plan, make_property, make_user, subscribe,
+    ApiTestCase, FakeStorage, image_bytes, make_destination, make_plan, make_property, make_user, subscribe,
 )
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -357,7 +357,7 @@ class PlanLimitTests(BillingTestCase):
         prop = make_property(owner=self.host)
         url = f"{self.PROP}{prop.pk}/images/"
         up = lambda: self.as_(self.host).post(url, {"image": SimpleUploadedFile("a.png", image_bytes(), content_type="image/png")}, format="multipart")
-        with FakeCloudinary() as cloud:
+        with FakeStorage() as cloud:
             self.assertEqual(self.error(up())["code"], "subscription_required")
             subscribe(self.host, make_plan(features={"max_images_per_property": 2}))
             self.assertEqual([up().status_code for _ in range(2)], [201, 201])

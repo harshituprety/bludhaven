@@ -20,6 +20,7 @@ export default function PlanFormModal({ plan, onClose, onSaved }) {
     durationDays: blank(plan?.duration_days),
     maxProperties: blank(plan?.features?.max_properties),
     maxImages: blank(plan?.features?.max_images_per_property),
+    premiumAmenities: Boolean(plan?.features?.premium_amenities),
     isActive: plan?.is_active ?? true,
     isTrial: plan?.is_trial ?? false,
   })
@@ -43,7 +44,7 @@ export default function PlanFormModal({ plan, onClose, onSaved }) {
       description: form.description.trim(),
       price: form.price.trim(),
       duration_days: Number(form.durationDays),
-      features: buildFeatures(form),
+      features: buildFeatures({ ...form, hadPremiumFlag: Boolean(plan?.features && 'premium_amenities' in plan.features) }),
       is_active: form.isActive,
       is_trial: form.isTrial,
     })
@@ -67,6 +68,10 @@ export default function PlanFormModal({ plan, onClose, onSaved }) {
             <TextField label="Max photos per property" inputMode="numeric" value={form.maxImages} onChange={set('maxImages')} error={local.maxImages} />
           </div>
           {fields.features && <small role="alert" className="font-semibold text-danger">{fields.features}</small>}
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={form.premiumAmenities} onChange={(e) => setForm((f) => ({ ...f, premiumAmenities: e.target.checked }))} className="size-4" />
+            Allow premium amenities (the ones marked premium)
+          </label>
         </fieldset>
         <label className="flex items-center gap-2 font-semibold">
           <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} className="size-4" />

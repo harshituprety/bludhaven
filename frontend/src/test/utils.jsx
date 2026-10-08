@@ -24,6 +24,7 @@ export function renderWithAuth(ui, { user = null, route = '/', status, favourite
     isAuthenticated: Boolean(user),
     login: async () => user,
     register: async () => ({}),
+    registerHost: async () => ({}),
     logout: async () => {},
     refreshUser: async () => user,
     updateProfile: async () => user,

@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, Trash2, UploadCloud } from 'lucide-react'
 import Badge from '../Badge'
 import Button from '../Button'
@@ -6,7 +6,7 @@ import ConfirmDialog from '../ConfirmDialog'
 import DataState from '../DataState'
 import FormAlert from '../FormAlert'
 import useApiQuery from '../../hooks/useApiQuery'
-import { deleteImage, listImages, updateImage, uploadImage } from '../../services/catalog'
+import { deleteImage, listImages, reorderImages, updateImage, uploadImage } from '../../services/catalog'
 import { apiError, fieldErrors, userMessage } from '../../services/errors'
 
 // These mirror the backend defaults (IMAGE_MAX_BYTES, IMAGE_ALLOWED_FORMATS) only to save a round trip;
@@ -35,7 +35,7 @@ function uploadMessage(error) {
   return userMessage(e)
 }
 
-function ImageRow({ image, index, count, busy, onMove, onDelete, onSaveAlt }) {
+function ImageRow({ image, index, count, busy, onMove, onCover, onDelete, onSaveAlt }) {
   const id = useId()
   const [draft, setDraft] = useState(image.alt_text ?? '')
   const [saving, setSaving] = useState(false)
@@ -62,6 +62,11 @@ function ImageRow({ image, index, count, busy, onMove, onDelete, onSaveAlt }) {
       <form onSubmit={save} className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-center gap-2">
           {index === 0 ? <Badge tone="soft">Cover</Badge> : <span className="text-sm text-ink-soft">Photo {index + 1}</span>}
+          {index > 0 && onCover && (
+            <button type="button" disabled={busy} onClick={() => onCover(index)} aria-label={`Make photo ${index + 1} the cover`} className="text-sm font-semibold text-brand underline disabled:opacity-40">
+              Make cover
+            </button>
+          )}
         </div>
         <label htmlFor={id} className="sr-only">
           Alt text for photo {index + 1}
@@ -118,9 +123,13 @@ function ImageRow({ image, index, count, busy, onMove, onDelete, onSaveAlt }) {
  * Photos of one property: upload (multipart), alt text, reorder (position 0 = cover) and delete.
  * `maxImages` is `usage.max_images_per_property` from the current subscription (missing = no limit stated).
  */
-export default function ImageManager({ propertyId, maxImages }) {
+export default function ImageManager({ propertyId, maxImages, onCount }) {
   const { data, error, loading, reload } = useApiQuery((signal) => listImages(propertyId, signal), [propertyId])
   const inputId = useId()
+  const count = data?.results?.length
+  useEffect(() => {
+    if (count !== undefined) onCount?.(count)
+  }, [count, onCount])
   const fileInput = useRef(null)
   const [uploads, setUploads] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -177,6 +186,19 @@ export default function ImageManager({ propertyId, maxImages }) {
       await updateImage(propertyId, a.id, { position: pb })
     } catch (err) {
       setActionError(fieldErrors(err).position || userMessage(err))
+    } finally {
+      setBusy(false)
+      reload()
+    }
+  }
+
+  async function makeCover(index) {
+    setBusy(true)
+    setActionError(null)
+    try {
+      await reorderImages(propertyId, [images[index].id, ...images.filter((_, i) => i !== index).map((i) => i.id)])
+    } catch (err) {
+      setActionError(userMessage(err))
     } finally {
       setBusy(false)
       reload()
@@ -252,7 +274,7 @@ export default function ImageManager({ propertyId, maxImages }) {
       <DataState loading={loading && !data} error={error} empty={data && images.length === 0} onRetry={reload} emptyTitle="No photos yet" emptyMessage="Add at least one photo; the first one becomes the cover." rows={2}>
         <ul className="flex flex-col gap-3">
           {images.map((image, index) => (
-            <ImageRow key={image.id} image={image} index={index} count={images.length} busy={busy} onMove={move} onDelete={(img) => { setDeleteState({ pending: false, error: null }); setToDelete(img) }} onSaveAlt={saveAlt} />
+            <ImageRow key={image.id} image={image} index={index} count={images.length} busy={busy} onMove={move} onCover={makeCover} onDelete={(img) => { setDeleteState({ pending: false, error: null }); setToDelete(img) }} onSaveAlt={saveAlt} />
           ))}
         </ul>
       </DataState>

@@ -2,12 +2,13 @@
 
     python manage.py check_storage
 
-Uploads a 1x1 test image under ``<root>/healthcheck/``, confirms it is served over HTTPS, then deletes it.
+Uploads a 1x1 test image under ``<root>/healthcheck/``, reads it back over HTTPS, then deletes it.
 Run it once after deployment with the production ``CLOUDINARY_URL``; the automated tests use a fake store and
 cannot prove the real account works. Prints nothing secret.
 """
 
 import secrets
+import urllib.request
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -23,21 +24,32 @@ PIXEL = bytes.fromhex(
 
 
 class Command(BaseCommand):
-    help = "Upload and delete a tiny test image to prove the Cloudinary credentials work."
+    help = "Upload a tiny test image to Cloudinary, fetch it from its URL, then delete it, to prove the credentials work."
 
     def handle(self, *args, **options):
-        if not settings.CLOUDINARY_URL:
+        if not storage.is_configured():
             raise CommandError("CLOUDINARY_URL is not set: image uploads are disabled (they answer 503).")
         public_id = f"{settings.CLOUDINARY_ROOT_FOLDER}/healthcheck/{secrets.token_urlsafe(12)}"
         try:
             result = storage.upload_image(PIXEL, public_id)
         except StorageUnavailable:
             raise CommandError("Upload failed. Check CLOUDINARY_URL (key, secret, cloud name) and outbound HTTPS; see the log.")
-        url = result.get("secure_url", "")
-        if not url.startswith("https://"):
-            storage.delete_image(result.get("public_id") or public_id)
-            raise CommandError("Cloudinary did not return an https URL.")
         self.stdout.write(self.style.SUCCESS("Upload OK."))
-        if not storage.delete_image(result.get("public_id") or public_id):
-            raise CommandError("Upload worked but the delete failed; remove the healthcheck/ test file by hand.")
+        url = result.get("url", "")
+        problem = None
+        if not url.startswith("https://"):
+            problem = "Cloudinary did not return an https URL."
+        else:
+            try:
+                with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310 (https URL returned by Cloudinary)
+                    if response.status != 200 or not response.headers.get("Content-Type", "").startswith("image/"):
+                        problem = "The uploaded image could not be read back from its URL."
+            except Exception:
+                problem = "The image uploaded but its URL is not readable. Check the account's delivery settings."
+        deleted = storage.delete_image(result.get("key") or public_id)
+        if problem:
+            raise CommandError(problem)
+        self.stdout.write(self.style.SUCCESS("Read-back OK."))
+        if not deleted:
+            raise CommandError(f"Upload worked but the delete failed; remove {public_id} by hand.")
         self.stdout.write(self.style.SUCCESS("Delete OK. Cloudinary is configured correctly."))

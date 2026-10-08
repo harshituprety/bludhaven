@@ -7,6 +7,7 @@ from .views import (
     MeView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
+    RegisterHostView,
     RegisterView,
     ResendVerificationView,
     TokenBlacklistThrottledView,
@@ -16,6 +17,7 @@ from .views import (
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
+    path("register-host/", RegisterHostView.as_view(), name="register_host"),
     path("verify-email/", VerifyEmailView.as_view(), name="verify_email"),
     path("resend-verification/", ResendVerificationView.as_view(), name="resend_verification"),
     path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset"),

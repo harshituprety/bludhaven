@@ -62,8 +62,10 @@ export const ASSIGNABLE_ROLES = [
  * Builds the `features` object from the two optional limits. A blank field is simply left out, which the
  * backend reads as "no limit"; nothing is ever filled in on the admin's behalf.
  */
-export function buildFeatures({ maxProperties, maxImages }) {
+export function buildFeatures({ maxProperties, maxImages, premiumAmenities, hadPremiumFlag }) {
   const features = {}
+  // Only written when on, or when switching off a flag the plan already had; an untouched plan stays as it was.
+  if (premiumAmenities || (hadPremiumFlag && premiumAmenities === false)) features.premium_amenities = Boolean(premiumAmenities)
   if (maxProperties.trim() !== '') features.max_properties = Number(maxProperties)
   if (maxImages.trim() !== '') features.max_images_per_property = Number(maxImages)
   return features

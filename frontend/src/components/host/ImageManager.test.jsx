@@ -49,7 +49,7 @@ describe('ImageManager', () => {
     expect(await screen.findByText(text)).toBeInTheDocument()
   })
 
-  it('uploads as multipart without a Cloudinary id in the UI', async () => {
+  it('uploads as multipart without exposing any storage key in the UI', async () => {
     mock.onPost('/api/properties/7/images/').reply(201, { id: 2, url: 'https://img.test/b.jpg', alt_text: '', position: 1 })
     render(<ImageManager propertyId={7} />)
     await screen.findByText(/1 image/)

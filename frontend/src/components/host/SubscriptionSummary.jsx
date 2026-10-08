@@ -14,6 +14,11 @@ export function FeatureList({ features }) {
           {FEATURE_LABELS[key]}: <strong className="text-ink">{features && key in features ? features[key] : 'no limit stated'}</strong>
         </li>
       ))}
+      {features && 'premium_amenities' in features && (
+        <li>
+          Premium amenities: <strong className="text-ink">{features.premium_amenities ? 'included' : 'not included'}</strong>
+        </li>
+      )}
     </ul>
   )
 }

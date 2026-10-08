@@ -19,7 +19,7 @@ const columns = [
   {
     title: 'Hosting',
     links: [
-      { to: '/plans', label: 'Become a host' },
+      { to: '/host/onboarding', label: 'Become a host' },
       { to: '/plans', label: 'Host plans' },
     ],
   },

@@ -18,7 +18,7 @@ export default function HostLogin() {
         <>
           Not a host? <Link to="/login">Guest login</Link>
           <br />
-          Want to list your property? <Link to="/plans">See how Hosts get started</Link>
+          New here? <Link to="/host/onboarding">Become a Host</Link>
         </>
       }
     />

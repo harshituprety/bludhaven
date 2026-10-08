@@ -225,6 +225,11 @@ EMAIL_VERIFICATION_TIMEOUT = int(os.getenv("EMAIL_VERIFICATION_TIMEOUT_HOURS", "
 # Technical guard against absurd date ranges (and total_price overflow); not a business rule. Raise it freely.
 BOOKING_MAX_NIGHTS = int(os.getenv("BOOKING_MAX_NIGHTS", "90"))
 
+# Host onboarding: a Host may build listings as drafts before choosing a plan. These caps stop that being abused;
+# once a plan is active, the plan's own limits apply (and drafts never count toward max_properties).
+MAX_DRAFTS_PER_HOST = int(os.getenv("MAX_DRAFTS_PER_HOST", "3"))
+DRAFT_MAX_IMAGES = int(os.getenv("DRAFT_MAX_IMAGES", "10"))
+
 # A PENDING booking holds its dates only this long; it is EXPIRED if no verified payment arrives in time.
 # Enforced by the availability queries themselves (an expired hold simply stops blocking), so a scheduled cleanup
 # (`manage.py expire_unpaid_bookings`) is tidiness, not correctness.

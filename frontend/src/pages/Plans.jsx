@@ -20,6 +20,10 @@ export default function Plans() {
     await logout()
     navigate('/host/login')
   }
+  const logoutThenOnboarding = async () => {
+    await logout()
+    navigate('/host/onboarding')
+  }
   const plans = (data?.results ?? []).filter((p) => p.is_active !== false)
   const ref = useRef(null)
   useScrollReveal(ref, [loading, plans.length])
@@ -30,7 +34,7 @@ export default function Plans() {
       <header data-reveal="heading" className="mb-8 max-w-prose">
         <h1 className="text-display">Plans for Hosts</h1>
         <p className="mt-2 text-ink-soft">
-          Hosts need an active subscription to list properties and upload photos. Once you’re signed in as a Host you can pick a plan, pay online, and start listing as soon as the payment is verified.
+          Hosts need an active subscription to list properties and upload photos. List your place as a draft first, then pick a plan and pay online. Your listing goes live as soon as the payment is verified.
         </p>
       </header>
 
@@ -53,12 +57,13 @@ export default function Plans() {
 
       <section data-reveal="section" className="mt-12 flex max-w-prose flex-col items-start gap-3 rounded-panel bg-tint p-6">
         <h2 className="text-xl font-bold">How to get started</h2>
-        <p className="text-ink-soft">Host accounts come from the Blüdhaven team. Log in as a Host, choose a plan and pay online to start listing.</p>
+        <p className="text-ink-soft">Create a Host account, add your property step by step, then choose a plan to publish it. Already hosting? Log in to manage your listings.</p>
         {status === 'loading' ? null : status === 'authenticated' && role === ROLES.END_USER ? (
           <>
-            <p className="font-semibold">You are currently signed in as a guest. Host accounts are created by invitation.</p>
+            <p className="font-semibold">You are currently signed in as a guest. Host accounts are separate from guest accounts.</p>
             <div className="flex flex-wrap gap-3">
-              <Button onClick={logoutThenHostLogin}>Log out and go to Host login</Button>
+              <Button onClick={logoutThenOnboarding}>Log out and become a Host</Button>
+              <Button variant="secondary" onClick={logoutThenHostLogin}>Log out and go to Host login</Button>
             </div>
           </>
         ) : status === 'authenticated' && role === ROLES.HOST ? (
@@ -72,8 +77,9 @@ export default function Plans() {
           </div>
         ) : (
           <div className="flex flex-wrap gap-3">
-            <Button to="/host/login">Host login</Button>
-            <Button to="/register" variant="secondary">
+            <Button to="/host/onboarding">Become a Host</Button>
+            <Button to="/host/login" variant="secondary">Host login</Button>
+            <Button to="/register" variant="ghost">
               Create a guest account
             </Button>
           </div>

@@ -41,8 +41,8 @@ export const highlights = [
   {
     id: 'hosts',
     icon: 'badge',
-    title: 'Hosts are invited by our team',
-    text: 'Host accounts are set up by the Blüdhaven team, not self-registered, so every listing comes from a host we have brought on ourselves.',
+    title: 'Hosts pick a plan to publish',
+    text: 'Anyone can start a listing as a private draft. It goes live only after the Host chooses a plan and the payment is verified.',
   },
 ]
 
@@ -65,6 +65,6 @@ export const faqs = [
   },
   {
     q: 'How do I become a host?',
-    a: 'Host accounts are set up by invitation from the Blüdhaven team, who also assign a subscription plan. Have a look at the plans, get in touch with the team, and once your account is ready you can add your homes with photos, amenities and a nightly price.',
+    a: 'Choose Become a host, create your Host account and describe your place with photos, amenities and a nightly price. It stays a private draft until you pick a subscription plan and the payment is verified, then you can publish it.',
   },
 ]

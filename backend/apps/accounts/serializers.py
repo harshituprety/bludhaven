@@ -80,6 +80,21 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError({"email": "A user with this email already exists."})
 
 
+class HostRegisterSerializer(RegisterSerializer):
+    """Host onboarding sign-up. Same fields and rules as the guest sign-up; the server, never the client, assigns HOST."""
+
+    def create(self, validated_data):
+        try:
+            return User.objects.create_user(
+                email=validated_data["email"],
+                password=validated_data["password"],
+                full_name=validated_data["full_name"].strip(),
+                role=Role.HOST,
+            )
+        except IntegrityError:
+            raise serializers.ValidationError({"email": "A user with this email already exists."})
+
+
 class VerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=1000, trim_whitespace=True)
 

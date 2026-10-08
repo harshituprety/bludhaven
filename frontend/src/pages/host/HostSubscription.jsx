@@ -110,7 +110,7 @@ function Statements({ transactions, payments }) {
     <>
       <Panel title="Wallet transactions" className="mt-6">
         <DataState loading={transactions.loading && !transactions.data} error={transactions.error} empty={transactions.data && transactions.data.results.length === 0} onRetry={transactions.reload} emptyTitle="No wallet activity yet" rows={2}>
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Wallet transactions</caption>
               <thead><tr className="text-ink-soft"><th className="py-1 pr-3 font-semibold">Date</th><th className="pr-3 font-semibold">Details</th><th className="pr-3 text-right font-semibold">Amount</th><th className="text-right font-semibold">Balance</th></tr></thead>
@@ -130,7 +130,7 @@ function Statements({ transactions, payments }) {
       </Panel>
       <Panel title="Payments" className="mt-6">
         <DataState loading={payments.loading && !payments.data} error={payments.error} empty={payments.data && payments.data.results.length === 0} onRetry={payments.reload} emptyTitle="No payments yet" rows={2}>
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Payments</caption>
               <thead><tr className="text-ink-soft"><th className="py-1 pr-3 font-semibold">Date</th><th className="pr-3 font-semibold">For</th><th className="pr-3 text-right font-semibold">Charged</th><th className="font-semibold">Status</th></tr></thead>
