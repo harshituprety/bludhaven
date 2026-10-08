@@ -7,7 +7,7 @@ import useScrollReveal from '../hooks/useScrollReveal'
  * Shared shell for the Login, Register and Forgot-password screens: heading, form, error box, submit button and a
  * footer link. The page owns the fields and the request; this owns the layout.
  */
-export default function AuthCard({ title, lead, submitLabel, onSubmit, submitting = false, error, notice, footer, children }) {
+export default function AuthCard({ title, lead, submitLabel, onSubmit, submitting = false, error, afterError, notice, footer, children }) {
   const ref = useRef(null)
   useScrollReveal(ref)
 
@@ -20,6 +20,7 @@ export default function AuthCard({ title, lead, submitLabel, onSubmit, submittin
         <FormAlert tone="info">{notice}</FormAlert>
         {children}
         <FormAlert>{error}</FormAlert>
+        {afterError}
         <Button type="submit" block size="lg" disabled={submitting} aria-busy={submitting}>
           {submitting ? 'Please wait…' : submitLabel}
         </Button>

@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import Logo from './Logo'
-import BackendStatus from './BackendStatus'
 import useScrollReveal from '../hooks/useScrollReveal'
 
 const YEAR = new Date().getFullYear()
@@ -47,9 +46,6 @@ export default function Footer() {
           <div className="lg:max-w-[32ch]">
             <Logo light />
             <p className="mt-5 max-w-[30ch] text-base">Vacation homes, cabins and villas, booked directly from the people who host them.</p>
-            <div className="mt-6">
-              <BackendStatus tone="dark" />
-            </div>
           </div>
 
           {/* The three link columns are content-width with one fixed gap, so the spaces between them are equal. */}

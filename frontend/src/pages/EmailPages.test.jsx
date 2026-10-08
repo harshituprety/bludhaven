@@ -21,11 +21,26 @@ describe('VerifyEmail', () => {
     expect(JSON.parse(mock.history.post[0].data)).toEqual({ token: 'abc' })
   })
 
-  it('explains an invalid link and asks to log in when signed out', async () => {
+  it('explains an invalid link and lets a signed-out person ask for a new one by email address', async () => {
     mock.onPost('/api/auth/verify-email/').reply(400, invalid)
+    mock.onPost('/api/auth/resend-verification/').reply(200, {})
     renderWithAuth(<VerifyEmail />, { route: '/verify-email?token=bad' })
     expect(await screen.findByText('Link expired or invalid')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+    // They cannot log in while unverified, so asking for a new link must not require a login.
+    expect(screen.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('Email'), 'ada@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Send a new link' }))
+    expect(await screen.findByText(/new link is on its way/)).toBeInTheDocument()
+    expect(JSON.parse(mock.history.post.find((r) => r.url === '/api/auth/resend-verification/').data)).toEqual({ email: 'ada@example.com' })
+  })
+
+  it('rejects a malformed address before calling the API', async () => {
+    mock.onPost('/api/auth/verify-email/').reply(400, invalid)
+    renderWithAuth(<VerifyEmail />, { route: '/verify-email?token=bad' })
+    await userEvent.type(await screen.findByLabelText('Email'), 'nope')
+    await userEvent.click(screen.getByRole('button', { name: 'Send a new link' }))
+    expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument()
+    expect(mock.history.post.some((r) => r.url === '/api/auth/resend-verification/')).toBe(false)
   })
 
   it('offers resend when signed in', async () => {

@@ -18,15 +18,8 @@ export const updateSubscription = async (id, body) => (await api.patch(`/api/sub
 export const renewSubscription = async (id, body = {}) => (await api.post(`/api/subscriptions/${id}/renew/`, body)).data
 
 // Billing profile ---------------------------------------------------------------------------------------------------------
-/** The Host's own profile, or null when none exists yet (the API answers 404). */
-export async function getBillingProfile(signal) {
-  try {
-    return (await api.get('/api/billing-profile/', { signal })).data
-  } catch (error) {
-    if (error.response?.status === 404) return null
-    throw error
-  }
-}
+/** The Host's own profile, or null when none exists yet (the API answers 200 with null). */
+export const getBillingProfile = async (signal) => (await api.get('/api/billing-profile/', { signal })).data
 export const saveBillingProfile = async (body) => (await api.put('/api/billing-profile/', body)).data
 export const listBillingProfiles = (params, signal) => get('/api/billing-profiles/', params, signal)
 
@@ -43,6 +36,8 @@ export const verifyBillingPayment = ({ razorpay_order_id, razorpay_payment_id, r
   post('/api/billing/payments/verify/', { razorpay_order_id, razorpay_payment_id, razorpay_signature })
 export const cancelSubscription = () => post('/api/billing/subscription/cancel/')
 export const resumeSubscription = () => post('/api/billing/subscription/resume/')
+/** Calls off a scheduled downgrade: the current plan carries on and what was paid for the queued plan goes to the wallet. */
+export const cancelScheduledChange = () => post('/api/billing/subscription/cancel-scheduled-change/')
 export const getWallet = (signal) => get('/api/billing/wallet/', undefined, signal)
 export const listWalletTransactions = (params, signal) => get('/api/billing/wallet/transactions/', params, signal)
 export const listMyBillingPayments = (params, signal) => get('/api/billing/payments/', params, signal)

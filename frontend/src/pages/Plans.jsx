@@ -7,7 +7,8 @@ import PlanCard, { PlanCardSkeleton } from '../components/plans/PlanCard'
 import useApiQuery from '../hooks/useApiQuery'
 import useAuth from '../hooks/useAuth'
 import useScrollReveal from '../hooks/useScrollReveal'
-import { listPlans } from '../services/billing'
+import { getCurrentSubscription, listPlans } from '../services/billing'
+import { planRelation, trialUnavailable } from '../utils/plans'
 import { ROLES } from '../utils/roles'
 
 export default function Plans() {
@@ -25,6 +26,23 @@ export default function Plans() {
     navigate('/host/onboarding')
   }
   const plans = (data?.results ?? []).filter((p) => p.is_active !== false)
+  // Only a Host has a subscription. If it cannot be read (not verified yet, offline) the cards simply show no current plan.
+  const isHost = status === 'authenticated' && role === ROLES.HOST
+  const current = useApiQuery((signal) => getCurrentSubscription(signal), [], { enabled: isHost })
+  const currentPlanId = isHost ? current.data?.subscription?.plan?.id : undefined
+  const currentPlan = plans.find((p) => p.id === currentPlanId)
+
+  // The button on each card. The server still decides what a change is and costs when the Host confirms it.
+  const planAction = (plan) => {
+    if (status === 'loading' || (status === 'authenticated' && !isHost)) return { status: undefined, cta: null }
+    if (!isHost) return { status: undefined, cta: { to: '/host/onboarding', label: plan.is_trial ? 'Start free trial' : `Choose ${plan.name}` } }
+    const hasPlan = Boolean(currentPlanId)
+    const relation = planRelation(plan, currentPlan)
+    if (relation === 'current') return { status: 'current', cta: { to: '/host/subscription', label: 'Manage plan' } }
+    if (trialUnavailable(plan, hasPlan)) return { status: undefined, cta: null }
+    const label = relation === 'upgrade' ? `Upgrade to ${plan.name}` : relation === 'downgrade' ? `Downgrade to ${plan.name}` : plan.is_trial ? 'Start free trial' : `Choose ${plan.name}`
+    return { status: undefined, cta: { to: '/host/plans', label } }
+  }
   const ref = useRef(null)
   useScrollReveal(ref, [loading, plans.length])
 
@@ -34,23 +52,24 @@ export default function Plans() {
       <header data-reveal="heading" className="mb-8 max-w-prose">
         <h1 className="text-display">Plans for Hosts</h1>
         <p className="mt-2 text-ink-soft">
-          Hosts need an active subscription to list properties and upload photos. List your place as a draft first, then pick a plan and pay online. Your listing goes live as soon as the payment is verified.
+          Hosts need an active subscription to list properties and upload photos. List your place as a draft first, then pick a plan and pay online. Your listing goes live as soon as the payment is verified. Upgrade any time and pay only the difference; a downgrade takes effect when your current period ends.
         </p>
       </header>
 
       {loading ? (
-        <div role="status" aria-busy="true" aria-label="Loading plans" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }, (_, i) => (
+        <div role="status" aria-busy="true" aria-label="Loading plans" className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => (
             <PlanCardSkeleton key={i} />
           ))}
           <span className="sr-only">Loading…</span>
         </div>
       ) : (
         <DataState error={error} empty={plans.length === 0} onRetry={reload} emptyTitle="No plans are published right now" emptyMessage="Check back soon, or get in touch with the Blüdhaven team.">
-          <div data-reveal="cards" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))}
+          <div data-reveal="cards" className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {plans.map((plan) => {
+              const { status: planStatus, cta } = planAction(plan)
+              return <PlanCard key={plan.id} plan={plan} status={planStatus} cta={cta} />
+            })}
           </div>
         </DataState>
       )}

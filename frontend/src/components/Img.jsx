@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { optimizedSrc } from '../utils/images'
 import { NO_PHOTO } from '../utils/mappers'
 
 /**
@@ -21,7 +22,7 @@ export default function Img({ eager = false, onLoad, src, ...props }) {
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       {...props}
-      src={failedSrc === src ? NO_PHOTO : src}
+      src={failedSrc === src ? NO_PHOTO : optimizedSrc(src)}
       data-loaded={loaded}
       onLoad={(e) => {
         setLoaded(true)

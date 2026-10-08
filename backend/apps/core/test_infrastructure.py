@@ -1,7 +1,7 @@
 """Shared API infrastructure: error shape, pagination, filtering, logging."""
 
 from django.http import Http404
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from django.urls import include, path
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -163,3 +163,13 @@ class PaginationAndFilteringTests(ApiTestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(data["count"], 0)
         self.assertEqual(Destination.objects.count(), 120)
+
+
+class HealthProbeRedirectTests(SimpleTestCase):
+    def test_the_health_probe_is_exempt_from_the_https_redirect(self):
+        import re
+
+        from django.conf import settings
+
+        self.assertTrue(any(re.match(p, "api/health/") for p in settings.SECURE_REDIRECT_EXEMPT))
+        self.assertFalse(any(re.match(p, "api/plans/") for p in settings.SECURE_REDIRECT_EXEMPT))

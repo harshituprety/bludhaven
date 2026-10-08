@@ -4,6 +4,7 @@ import AuthCard from './AuthCard'
 import Seo from './Seo'
 import PasswordField from './PasswordField'
 import TextField from './TextField'
+import ResendVerification from './ResendVerification'
 import useAuth from '../hooks/useAuth'
 import { apiError, isWrongPortal, userMessage } from '../services/errors'
 import { postLoginPath } from '../utils/roles'
@@ -31,6 +32,7 @@ export default function PortalLogin({ path, seoTitle, seoDescription, title, lea
   const from = location.state?.from
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const [unverified, setUnverified] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   // Already signed in (or just did): the role picks the destination, never the page they came from.
@@ -40,9 +42,12 @@ export default function PortalLogin({ path, seoTitle, seoDescription, title, lea
     event.preventDefault()
     setSubmitting(true)
     setError('')
+    setUnverified(false)
     try {
       await login({ email: form.email.trim(), password: form.password }, { expectedRole })
     } catch (err) {
+      // 403 email_not_verified: right password, address not confirmed yet. Offer a new link instead of a dead end.
+      setUnverified(apiError(err).code === 'email_not_verified')
       // A 401 from the login endpoint means the email/password were rejected. Every other failure keeps its usual message.
       setError(isWrongPortal(err) ? wrongRoleMessage : apiError(err).status === 401 ? WRONG_CREDENTIALS : userMessage(err))
       setSubmitting(false)
@@ -59,6 +64,7 @@ export default function PortalLogin({ path, seoTitle, seoDescription, title, lea
         onSubmit={submit}
         submitting={submitting}
         error={error}
+        afterError={unverified ? <ResendVerification email={form.email.trim()} label="Resend verification email" /> : null}
         notice={NOTICES[location.state?.reason]}
         footer={footer}
       >

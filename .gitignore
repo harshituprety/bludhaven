@@ -2,6 +2,11 @@
 backend/.venv/
 backend/venv/
 backend/.env
+backend/.env.*
+!backend/.env.example
+.env
+.env.*
+!.env.example
 backend/db.sqlite3
 backend/db.sqlite3-journal
 __pycache__/
@@ -20,3 +25,9 @@ frontend/*.local
 *.log
 .vscode/
 .idea/
+*.sql
+*.dump
+*.sqlite3
+*.zip
+.coverage
+backend/media/

@@ -4,17 +4,18 @@ import Panel from '../Panel'
 import Button from '../Button'
 import DataState from '../DataState'
 import FormAlert from '../FormAlert'
-import { FeatureList } from '../host/SubscriptionSummary'
+import PlanFeatures from '../plans/PlanFeatures'
 import useApiQuery from '../../hooks/useApiQuery'
 import useAuth from '../../hooks/useAuth'
 import useBillingPayment from '../../hooks/useBillingPayment'
 import { checkoutPlan, getCurrentSubscription, listPlans, quotePlan } from '../../services/billing'
+import { periodLabel, planRelation, trialUnavailable } from '../../utils/plans'
 import { apiError } from '../../services/errors'
-import { formatPaise, pluralize } from '../../utils/format'
+import { formatPaise } from '../../utils/format'
 
 const longDate = (iso) => (iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—')
 
-const KIND_LABEL = { NEW: 'Start this plan', RENEWAL: 'Renew this plan', CHANGE: 'Switch to this plan', TRIAL: 'Start free trial' }
+const KIND_LABEL = { NEW: 'Start this plan', RENEWAL: 'Renew this plan', CHANGE: 'Upgrade now', DOWNGRADE: 'Schedule downgrade', TRIAL: 'Start free trial' }
 
 /** What the server says choosing this plan costs right now (price, unused-time credit, wallet, amount to pay). */
 function QuoteBox({ quote, useWallet, onUseWallet }) {
@@ -46,6 +47,12 @@ function QuoteBox({ quote, useWallet, onUseWallet }) {
       <p className="text-ink-soft">
         {longDate(quote.start_date)} to {longDate(quote.expiry_date)}
       </p>
+      {quote.kind === 'DOWNGRADE' && (
+        <p>
+          Your {quote.replaces} plan stays as it is until {longDate(quote.start_date)}, then this plan starts. You’re paying for it now.
+        </p>
+      )}
+      {quote.kind === 'CHANGE' && quote.credit_paise > 0 && <p className="text-ink-soft">You pay the difference. The plan starts as soon as the payment is verified.</p>}
       {quote.blockers?.length > 0 && <FormAlert>{quote.blockers.join(' ')}</FormAlert>}
     </div>
   )
@@ -88,6 +95,7 @@ export default function PlanPicker({ onActivated, className = '' }) {
 
   const list = (plans.data?.results ?? []).filter((p) => p.is_active !== false)
   const sub = current.data?.subscription ?? null
+  const scheduled = current.data?.scheduled_change ?? null
   const choose = (id) => {
     billing.reset()
     setActivated(null)
@@ -106,15 +114,23 @@ export default function PlanPicker({ onActivated, className = '' }) {
       {billing.message && <FormAlert tone={billing.phase === 'cancelled' ? 'info' : undefined}>{billing.message}</FormAlert>}
       {sub && (
         <p className="mb-4 text-sm text-ink-soft">
-          You’re on <strong className="text-ink">{sub.plan?.name}</strong> until {longDate(sub.expiry_date)}. Choosing another plan credits the unused time on this one.
+          You’re on <strong className="text-ink">{sub.plan?.name}</strong> until {longDate(sub.expiry_date)}. Upgrading credits the unused time on this plan, so you only pay the difference. A downgrade starts when this period ends.
         </p>
+      )}
+      {scheduled && (
+        <FormAlert tone="info">
+          Your plan changes to <strong>{scheduled.plan?.name}</strong> on {longDate(scheduled.start_date)}. <Link to="/host/subscription" className="font-semibold underline">Manage it on your subscription page.</Link>
+        </FormAlert>
       )}
 
       <DataState loading={plans.loading && !plans.data} error={plans.error} empty={plans.data && list.length === 0} onRetry={plans.reload} emptyTitle="No plans are published right now" rows={2}>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
           {list.map((p) => {
+            const relation = planRelation(p, list.find((x) => x.id === sub?.plan?.id) ?? null)
             const isCurrent = sub?.plan?.id === p.id
+            const noTrial = trialUnavailable(p, Boolean(sub))
             const open = selected === p.id
+            const label = isCurrent ? 'Renew' : relation === 'upgrade' ? `Upgrade to ${p.name}` : relation === 'downgrade' ? `Downgrade to ${p.name}` : p.is_trial ? 'Start free trial' : `Choose ${p.name}`
             return (
               <li key={p.id}>
                 <Panel as="article" aria-label={p.name} className={open ? 'ring-2 ring-brand' : undefined}>
@@ -126,11 +142,9 @@ export default function PlanPicker({ onActivated, className = '' }) {
                   {p.description && <p className="mt-1 text-sm text-ink-soft">{p.description}</p>}
                   <p className="mt-3">
                     <strong className="font-display text-3xl">{p.is_trial ? 'Free' : formatPaise(Math.round(Number(p.price) * 100))}</strong>
-                    <span className="ml-2 text-ink-soft">for {pluralize(p.duration_days, 'day')}</span>
+                    <span className="ml-2 text-ink-soft">{periodLabel(p)}</span>
                   </p>
-                  <div className="mt-3">
-                    <FeatureList features={p.features} />
-                  </div>
+                  <PlanFeatures features={p.features} className="mt-3 text-sm" />
                   {open ? (
                     <>
                       {quoteError && <FormAlert>{quoteError}</FormAlert>}
@@ -146,10 +160,19 @@ export default function PlanPicker({ onActivated, className = '' }) {
                       </div>
                     </>
                   ) : (
-                    <div className="mt-4">
-                      <Button size="sm" variant={isCurrent ? 'secondary' : 'primary'} onClick={() => choose(p.id)} aria-label={`Select ${p.name}`}>
-                        {isCurrent ? 'Renew' : sub ? 'Switch to this plan' : p.is_trial ? 'Start free trial' : 'Select'}
-                      </Button>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      {noTrial ? (
+                        <p className="text-sm text-ink-soft">The free trial is for Hosts who don’t have a plan yet.</p>
+                      ) : (
+                        <Button size="sm" variant={isCurrent ? 'secondary' : 'primary'} onClick={() => choose(p.id)}>
+                          {label}
+                        </Button>
+                      )}
+                      {isCurrent && (
+                        <Link to="/host/subscription" className="text-sm font-semibold text-brand underline underline-offset-3">
+                          Manage plan
+                        </Link>
+                      )}
                     </div>
                   )}
                 </Panel>

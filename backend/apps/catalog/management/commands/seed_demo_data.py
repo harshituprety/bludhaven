@@ -18,6 +18,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
@@ -57,8 +58,11 @@ class Command(BaseCommand):
 
         plan, _ = SubscriptionPlan.objects.get_or_create(
             name="Demo plan (development only)",
-            defaults={"description": "Sample plan with no limits, created by seed_demo_data.", "price": 0, "duration_days": 3650, "features": {}},
+            # Inactive so it does not appear next to the real Host plans; hosts that hold it keep their access.
+            defaults={"description": "Sample plan with no limits, created by seed_demo_data.", "price": 0, "duration_days": 3650, "features": {}, "is_active": False},
         )
+
+        call_command("seed_host_plans", stdout=self.stdout)  # Trial / Standard / Premium / Ultimate for the Plans pages
 
         hosts = {}
         for name in sorted({p["host"] for p in data["properties"]}):

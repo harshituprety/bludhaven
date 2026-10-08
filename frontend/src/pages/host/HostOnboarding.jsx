@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Seo from '../../components/Seo'
 import Button from '../../components/Button'
+import CheckEmail from '../../components/CheckEmail'
 import FormAlert from '../../components/FormAlert'
 import LoadingState from '../../components/LoadingState'
 import PasswordField from '../../components/PasswordField'
@@ -98,11 +99,12 @@ const fromProperty = (p) => ({
 
 // --- account ----------------------------------------------------------------------------------------------------------
 
-function AccountStep({ onDone }) {
-  const { registerHost, login } = useAuth()
+function AccountStep() {
+  const { registerHost } = useAuth()
   const [form, setForm] = useState({ fullName: '', email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
+  const [doneFor, setDoneFor] = useState('')
 
   async function submit(e) {
     e.preventDefault()
@@ -116,12 +118,19 @@ function AccountStep({ onDone }) {
     try {
       const email = form.email.trim()
       await registerHost({ email, fullName: form.fullName.trim(), password: form.password })
-      await login({ email, password: form.password }, { expectedRole: ROLES.HOST })
-      onDone()
+      setDoneFor(email) // the account cannot be used until the emailed link is opened, so no login yet
     } catch (err) {
       setErrors(fieldErrors(err))
       setBusy(false)
     }
+  }
+
+  if (doneFor) {
+    return (
+      <CheckEmail email={doneFor} loginPath="/host/login" loginState={{ from: '/host/onboarding' }}>
+        <p className="text-ink-soft">Once you’re verified, log in as a Host and you’ll pick up right where you left off.</p>
+      </CheckEmail>
+    )
   }
 
   return (
@@ -133,7 +142,7 @@ function AccountStep({ onDone }) {
       <TextField label="Email" type="email" autoComplete="email" required value={form.email} error={errors.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
       <PasswordField autoComplete="new-password" minLength={8} required hint="Use 8 or more characters." value={form.password} error={errors.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
       <Button type="submit" size="lg" disabled={busy} aria-busy={busy}>
-        {busy ? 'Creating your account…' : 'Create account and continue'}
+        {busy ? 'Creating your account…' : 'Create account'}
       </Button>
       <p className="text-ink-soft">
         Already a Host? <Link to="/host/login" state={{ from: '/host/onboarding' }} className="font-bold text-brand">Host Login</Link>
@@ -414,7 +423,7 @@ export default function HostOnboarding() {
         <div><Button to="/admin">Go to Admin</Button></div>
       </div>,
     )
-  if (!isHost) return shell(<AccountStep onDone={() => go('place')} />)
+  if (!isHost) return shell(<AccountStep />)
 
   if (published)
     return shell(

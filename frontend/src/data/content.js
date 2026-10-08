@@ -1,5 +1,5 @@
 // Static copy for the home page. Every statement here describes how the platform actually behaves
-// (see backend/docs/API.md); there are no invented figures, people or quotes.
+// (see the backend API); there are no invented figures, people or quotes.
 
 // FICTIONAL demo testimonials for the home page (components/Testimonials.jsx). The names, places and ratings are
 // invented for design/demo purposes and are not collected from customers. Replace them with real, consented guest

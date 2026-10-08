@@ -82,20 +82,36 @@ describe('Become a Host entry points', () => {
 })
 
 describe('Host account creation', () => {
-  it('creates a Host through the Host endpoint without sending a role, then signs in and starts the listing', async () => {
+  it('creates a Host through the Host endpoint without sending a role, then asks them to verify their email instead of signing them in', async () => {
     authMock.onPost('/api/auth/register-host/').reply(201, { ...USERS.host, is_email_verified: false })
-    authMock.onPost('/api/auth/token/').reply(200, { access: 'acc-1', user: USERS.host })
-    apiMock.onGet('/api/auth/me/').reply(200, USERS.host)
-    apiMock.onGet('/api/subscriptions/current/').reply(200, noSub)
     fallback()
     renderApp(<App />, { route: '/host/onboarding' })
     await userEvent.type(await screen.findByLabelText('Full name'), 'New Host')
     await userEvent.type(screen.getByLabelText('Email'), 'new.host@example.com')
     await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'Secret-pass-123')
-    await userEvent.click(screen.getByRole('button', { name: 'Create account and continue' }))
-    expect(await screen.findByRole('heading', { name: 'Tell us about your place' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }))
+    expect(await screen.findByRole('heading', { name: 'Check your email' })).toBeInTheDocument()
+    expect(screen.getByText('new.host@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to log in' })).toHaveAttribute('href', '/host/login')
     expect(Object.keys(body(authMock.history.post.find((r) => r.url === '/api/auth/register-host/'))).sort()).toEqual(['email', 'full_name', 'password'])
     expect(authMock.history.post.some((r) => r.url === '/api/auth/register/')).toBe(false)
+    // No login attempt: an unverified account cannot be used yet.
+    expect(authMock.history.post.some((r) => r.url === '/api/auth/token/')).toBe(false)
+    expect(screen.queryByRole('heading', { name: 'Tell us about your place' })).not.toBeInTheDocument()
+  })
+
+  it('resends the verification email from the check-your-email screen', async () => {
+    authMock.onPost('/api/auth/register-host/').reply(201, { ...USERS.host, is_email_verified: false })
+    authMock.onPost('/api/auth/resend-verification/').reply(200, {})
+    fallback()
+    renderApp(<App />, { route: '/host/onboarding' })
+    await userEvent.type(await screen.findByLabelText('Full name'), 'New Host')
+    await userEvent.type(screen.getByLabelText('Email'), 'new.host@example.com')
+    await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'Secret-pass-123')
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Resend the email' }))
+    expect(await screen.findByText(/new link is on its way/)).toBeInTheDocument()
+    expect(body(authMock.history.post.find((r) => r.url === '/api/auth/resend-verification/'))).toEqual({ email: 'new.host@example.com' })
   })
 
   it('shows the server’s field errors and stays on the account step', async () => {
@@ -105,7 +121,7 @@ describe('Host account creation', () => {
     await userEvent.type(await screen.findByLabelText('Full name'), 'New Host')
     await userEvent.type(screen.getByLabelText('Email'), 'dup@example.com')
     await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'Secret-pass-123')
-    await userEvent.click(screen.getByRole('button', { name: 'Create account and continue' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }))
     expect(await screen.findByText('A user with this email already exists.')).toBeInTheDocument()
   })
 
@@ -228,7 +244,7 @@ describe('plan, payment and publishing', () => {
     apiMock.onPost('/api/billing/subscription/checkout/').reply(201, { status: 'payment_required', key_id: 'k', order_id: 'order_1', amount: 300000, currency: 'INR' })
     vi.spyOn(razorpay, 'openCheckout').mockRejectedValue(new razorpay.CheckoutError('failed', 'The card was declined.'))
     await toPlanStep()
-    await userEvent.click(await screen.findByRole('button', { name: 'Select Starter' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Choose Starter' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Pay ₹3,000' }))
     expect(await screen.findByText(/The card was declined/)).toBeInTheDocument()
     expect(apiMock.history.post.some((r) => r.url.endsWith('/publish/'))).toBe(false)
@@ -245,7 +261,7 @@ describe('plan, payment and publishing', () => {
     apiMock.onPost('/api/billing/payments/verify/').reply(200, { status: 'applied', subscription: { id: 1, plan: { name: 'Starter' }, expiry_date: '2026-11-06' }, usage: {} })
     apiMock.onPost('/api/properties/40/publish/').reply(200, { ...draftRow, status: 'PUBLISHED' })
     await toPlanStep()
-    await userEvent.click(await screen.findByRole('button', { name: 'Select Starter' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Choose Starter' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Pay ₹3,000' }))
     expect(await screen.findByText(/Starter plan is active until/)).toBeInTheDocument()
     expect(apiMock.history.post.some((r) => r.url.endsWith('/publish/'))).toBe(false) // activation alone does not publish

@@ -2,10 +2,10 @@ from datetime import timedelta
 
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,7 +14,7 @@ from apps.accounts.models import Role, User
 from apps.accounts.permissions import IsHost, IsHostOrSuperAdmin, IsSuperAdmin
 from apps.core.exceptions import Conflict
 
-from . import limits
+from . import limits, purchases
 from .filters import BillingProfileFilter, PlanFilter, SubscriptionFilter
 from .models import BillingProfile, Subscription, SubscriptionPlan
 from .serializers import (
@@ -36,8 +36,8 @@ class SubscriptionPlanViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionPlanSerializer
     filterset_class = PlanFilter
     search_fields = ["name", "description"]
-    ordering_fields = ["price", "name", "duration_days", "created_at"]
-    ordering = ["price", "name"]
+    ordering_fields = ["display_order", "price", "name", "duration_days", "created_at"]
+    ordering = ["display_order", "price", "name"]
 
     def get_permissions(self):
         if self.action in ("list", "retrieve"):
@@ -158,18 +158,22 @@ class SubscriptionViewSet(
         """The signed-in Host's entitling subscription (or null) and their usage against its limits."""
         sub = limits.current_subscription(request.user)
         data = SubscriptionSerializer(sub, context=self.get_serializer_context()).data if sub else None
-        return Response({"subscription": data, "usage": limits.usage(request.user)})
+        queued = purchases.scheduled_change(request.user)
+        scheduled = SubscriptionSerializer(queued, context=self.get_serializer_context()).data if queued else None
+        return Response({"subscription": data, "scheduled_change": scheduled, "usage": limits.usage(request.user)})
 
 
 class MyBillingProfileView(APIView):
-    """A Host's own billing details: GET (404 until set), PUT/PATCH to create or change."""
+    """A Host's own billing details: GET (200 with ``null`` until they are set), PUT/PATCH to create or change."""
 
     permission_classes = [IsAuthenticated, IsHost]
 
     def get(self, request):
         profile = BillingProfile.objects.filter(user=request.user).first()
         if profile is None:
-            raise NotFound("No billing profile yet.")
+            # "No billing details yet" is a normal state for a new Host, not an error: 200 with a JSON null.
+            # (DRF's renderer would send an empty body for None, which is not valid JSON, so this is answered directly.)
+            return JsonResponse(None, safe=False)
         return Response(BillingProfileSerializer(profile).data)
 
     def put(self, request):

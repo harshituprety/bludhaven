@@ -37,7 +37,7 @@
   --font-display: var(--font-sans);
   --font-script: 'Pinyon Script', 'Snell Roundhand', cursive;
 
-  /* Fixed brand colours (same in both themes). */
+  /* Fixed brand colours. */
   --color-lagoon-600: #12707b;
   --color-lagoon-700: #0e5a63;
   --color-lagoon-900: #07343a;
@@ -89,9 +89,7 @@
 }
 
 /* Themed colours. Utilities (bg-surface, text-ink, border-line, ...) point at the
-   runtime variables below, so one class works in light and dark mode. The dark
-   values are applied by the "dark" class on <html>, set before first paint by
-   the inline script in index.html and toggled by ThemeProvider. */
+   variables below. */
 @theme inline {
   --color-surface: var(--c-surface);
   --color-mist: var(--c-mist);
@@ -125,25 +123,6 @@
   --c-danger: #b3261e;
   --c-skel-a: #e8eef0; /* skeleton base */
   --c-skel-b: #f2f6f7; /* skeleton shimmer highlight */
-}
-
-:root.dark {
-  color-scheme: dark;
-  --c-surface: #0e1a20;
-  --c-mist: #15242c;
-  --c-line: #2a3f4a;
-  --c-ink: #e8f0f3;
-  --c-ink-soft: #a8bac3;
-  --c-ink-faint: #8a9ca6;
-  --c-primary: #12707b;
-  --c-primary-strong: #0e5a63;
-  --c-brand: #5cc4cf;
-  --c-tint: #143039;
-  --c-tint-strong: #1d4854;
-  --c-success: #4cc38a;
-  --c-danger: #ff8f85;
-  --c-skel-a: #182a33;
-  --c-skel-b: #213843;
 }
 
 @layer base {
@@ -228,19 +207,6 @@ html.lenis body {
    transitions but not CSS transform ones, which would lag behind the tween. */
 [data-motion] {
   transition-property: color, background-color, border-color, opacity, text-decoration-color;
-}
-
-/* Short colour cross-fade while switching theme. ThemeProvider adds this class
-   to <html> for ~300ms around the switch, so normal hover transitions are untouched. */
-html.theme-switching,
-html.theme-switching *,
-html.theme-switching ::before,
-html.theme-switching ::after {
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    border-color 0.25s ease,
-    fill 0.25s ease !important;
 }
 
 /* Loading: an image that has not arrived yet shows a soft shimmer; when it does, it fades in

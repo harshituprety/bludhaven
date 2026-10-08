@@ -5,7 +5,7 @@ from .models import BillingPayment, BillingProfile, HostWallet, Subscription, Su
 
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ["name", "price", "duration_days", "is_trial", "is_active"]
+    list_display = ["name", "display_order", "price", "duration_days", "is_trial", "is_active"]
 
 
 @admin.register(Subscription)

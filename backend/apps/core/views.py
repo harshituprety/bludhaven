@@ -7,5 +7,5 @@ from rest_framework.response import Response
 @authentication_classes([])  # public: a stale or bad token must not turn a liveness probe into a 401
 @permission_classes([AllowAny])
 def health(request):
-    """Lightweight liveness probe used by the frontend's backend-status indicator."""
+    """Lightweight liveness probe for deployment health checks and monitoring."""
     return Response({"status": "ok"})

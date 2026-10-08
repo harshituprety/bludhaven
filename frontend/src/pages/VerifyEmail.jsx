@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Seo from '../components/Seo'
 import Button from '../components/Button'
+import ResendVerification from '../components/ResendVerification'
 import FormAlert from '../components/FormAlert'
 import useAuth from '../hooks/useAuth'
 import { resendVerification, verifyEmail } from '../services/auth'
@@ -109,12 +110,10 @@ export default function VerifyEmail() {
             </>
           )
         ) : (
-          <p className="text-ink-soft">
-            <Link to="/login" className="font-bold text-brand">
-              Log in
-            </Link>{' '}
-            to request a new verification link.
-          </p>
+          <>
+            <p className="text-ink-soft">Enter the email address you signed up with and we’ll send a new link.</p>
+            <ResendVerification label="Send a new link" variant="primary" />
+          </>
         )}
       </>
     )

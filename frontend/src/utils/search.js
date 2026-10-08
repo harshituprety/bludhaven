@@ -82,7 +82,7 @@ export function pageFromParams(params) {
 }
 
 /**
- * The query string for GET /api/properties/ (names as in backend/docs/API.md).
+ * The query string for GET /api/properties/ (names as in the backend filters).
  * `exactDestination`: the destination text matched a known destination name, so filter on it exactly;
  * otherwise the text is sent as a free-text `search`.
  * Returned as URLSearchParams because `property_type` must repeat (`property_type=A&property_type=B`).

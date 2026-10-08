@@ -21,6 +21,8 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from apps.core.exceptions import PlanLimitReached
+
 from .models import Subscription
 
 FEATURE_KEYS = {"max_properties", "max_images_per_property", "premium_amenities"}
@@ -101,7 +103,11 @@ def ensure_can_add_property(owner):
     sub = _require(owner)
     limit = sub.plan.features.get("max_properties")
     if limit is not None and _published(owner).count() >= limit:
-        raise PermissionDenied(f"Your plan allows {limit} propert{'y' if limit == 1 else 'ies'}.", code="plan_limit_reached")
+        raise PlanLimitReached(
+            f"Property limit reached. Your {sub.plan.name} plan allows {limit} propert{'y' if limit == 1 else 'ies'}. "
+            "Upgrade your plan to add more properties.",
+            {"limit": "max_properties", "allowed": limit, "plan": sub.plan.name},
+        )
 
 
 def ensure_can_add_draft(owner):
@@ -123,11 +129,16 @@ def ensure_can_add_image(prop):
     if sub is None:
         if prop.status != prop.Status.DRAFT:
             _require(prop.owner)
-        limit = settings.DRAFT_MAX_IMAGES
+        limit, plan_name = settings.DRAFT_MAX_IMAGES, None
     else:
-        limit = sub.plan.features.get("max_images_per_property")
+        limit, plan_name = sub.plan.features.get("max_images_per_property"), sub.plan.name
     if limit is not None and prop.images.count() >= limit:
-        raise PermissionDenied(f"Your plan allows {limit} image{'' if limit == 1 else 's'} per property.", code="plan_limit_reached")
+        noun = f"{limit} image{'' if limit == 1 else 's'} per property"
+        if plan_name:
+            message = f"Image limit reached. Your {plan_name} plan allows {noun}. Upgrade your plan to add more photos."
+        else:
+            message = f"Image limit reached. A draft can hold {noun} until you choose a plan. Choose a plan to add more photos."
+        raise PlanLimitReached(message, {"limit": "max_images_per_property", "allowed": limit, "plan": plan_name})
 
 
 def usage(user):

@@ -14,7 +14,7 @@ import DetailList from "./DetailList";
 import { fmtDate, fmtDateTime, fmtMoney } from "./adminFormat";
 import useSubmit from "./useSubmit";
 
-// Which actions each status allows (mirrors the API docs; the server decides). There is no manual confirm: a booking
+// Which actions each status allows (mirrors the API workflow; the server decides). There is no manual confirm: a booking
 // becomes CONFIRMED only through a verified guest payment.
 const ACTIONS = {
   complete: {

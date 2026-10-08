@@ -174,11 +174,5 @@ export function resetClientState() {
   sessionHint.set(false)
 }
 
-/** GET /api/health/ → { status: "ok" } */
-export async function getHealth(signal) {
-  const { data } = await api.get('/api/health/', { signal, timeout: 5000 })
-  return data
-}
-
 export { bare as authClient }
 export default api

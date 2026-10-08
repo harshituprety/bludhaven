@@ -1,6 +1,6 @@
 # Blüdhaven
 
-A single-platform vacation-rental marketplace for India: browse homes, cabins and villas, book stays, and (for Hosts) manage listings under a subscription. The React frontend is fully integrated with the Django REST API. **This application uses a single shared dataset with role-based access and Host ownership. It does not use multi-tenancy.** Three roles: `SUPER_ADMIN`, `HOST`, `END_USER`. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture, auth/cookie/CSRF flow, RBAC, subscriptions, deployment.
+A single-platform vacation-rental marketplace for India: browse homes, cabins and villas, book stays, and (for Hosts) manage listings under a subscription. The React frontend is fully integrated with the Django REST API. **This application uses a single shared dataset with role-based access and Host ownership. It does not use multi-tenancy.** Three roles: `SUPER_ADMIN`, `HOST`, `END_USER`.
 
 The UI is inspired by modern vacation-rental marketplace patterns, with Vrbo used as a reference for UX direction (destination/dates/guests search, property cards, filters, detail pages, host/admin workflows). The brand, visual design and copy are original. Photography is supplied by you (see "Images").
 
@@ -86,7 +86,7 @@ cp .env.example .env               # optional – defaults to http://localhost:8
 npm run dev                        # http://localhost:5173
 ```
 
-Open <http://localhost:5173>. The footer shows **Backend Status: Connected** when Django is running and **Offline** when it isn't.
+Open <http://localhost:5173>.
 
 ## Frontend tooling
 
@@ -126,7 +126,7 @@ Open <http://localhost:5173>. The footer shows **Backend Status: Connected** whe
 
 | Variable            | Default                 | Purpose              |
 | ------------------- | ----------------------- | -------------------- |
-| `VITE_API_BASE_URL` | `http://localhost:8000` | Base URL of the API  |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Base URL of the API. **Required for a production build** (the build stops without it) |
 | `VITE_SITE_URL`     | dev server / placeholder | Public site address for canonical URLs, Open Graph tags, `sitemap.xml`, `robots.txt` (set for production builds) |
 
 ## Theme, SEO and motion
@@ -183,15 +183,13 @@ All API routes live under `/api/`. Today:
 - Super Admin user management: `users/` (+ `users/<id>/send-password-reset/`)
 - Also under `/api/auth/`: `csrf/`
 
-Browsing (destinations, amenities, properties, images, reviews) needs no account. Hosts manage their own properties and bookings, End Users with a verified email can book, and Super Admins can manage everything. Public sign-up only ever creates End Users. Hosts are invited by a Super Admin (`POST /api/users/`); Super Admins are created on the server with `createsuperuser`.
+Browsing (destinations, amenities, properties, images, reviews) needs no account. Hosts manage their own properties and bookings, accounts must verify their email before they can log in, End Users can then book, and Super Admins can manage everything. Public sign-up only ever creates End Users. Hosts are invited by a Super Admin (`POST /api/users/`); Super Admins are created on the server with `createsuperuser`.
 
 **Sessions.** Login returns `{access, user}`; the refresh token is set as an httpOnly cookie (`bludhaven_refresh`, path `/api/auth/`) and is never in a response body. The page keeps the 15-minute access token in memory. Refresh and logout read the cookie and need a CSRF token (`GET /api/auth/csrf/`, sent as `X-CSRFToken`). The frontend must call the API with credentials enabled.
 
 **Images.** Property images are uploaded as multipart (`POST /api/properties/<id>/images/`, field `image`), checked by content, re-encoded and stored in Cloudinary under `<root>/hosts/<host id>/properties/<property id>/<random id>`. MySQL keeps only the URL, public ID and file facts. Set `CLOUDINARY_URL` to enable it.
 
-**Plans.** Hosts need an active subscription to create properties or upload images; the limits come from the plan's `features` (set by a Super Admin). Run `python manage.py expire_subscriptions` daily (cron) to mark ended subscriptions EXPIRED; entitlement is checked by date regardless.
-
-Full request/response details, error codes, email settings and the endpoint list for the Postman collection are in [`backend/docs/API.md`](backend/docs/API.md).
+**Plans.** Hosts need an active subscription to create properties or upload images; the limits come from the plan's `features` (set by a Super Admin). Create the initial Trial / Standard / Premium / Ultimate plans with `python manage.py seed_host_plans` (safe to repeat; review the prices in the Admin portal before launch). Run `python manage.py expire_subscriptions` daily (cron) to mark ended subscriptions EXPIRED; entitlement is checked by date regardless.
 
 Errors always look like `{"error": {"code": "...", "message": "...", "details": ...}}`. Lists are paginated (`?page=2&page_size=24`, default 12, max 100). Login, token, registration and password-reset endpoints are rate limited per client address, and everything else has a general limit; see the `THROTTLE_*` variables.
 
@@ -201,9 +199,8 @@ Errors always look like `{"error": {"code": "...", "message": "...", "details": 
 
 - **Guest room bookings are paid online with Razorpay.** Reserving creates a `PENDING` booking that holds the dates for **15 minutes** (`BOOKING_PAYMENT_WINDOW_MINUTES`); the booking becomes `CONFIRMED` only after the backend verifies the payment (Checkout signature, order, amount, currency, status and the 15-minute window), or when Razorpay's webhook reports it. The frontend never decides a price or whether a payment succeeded.
 - **An expired booking is never automatically resurrected.** A payment that arrives after expiry makes the booking `REFUND_REQUIRED`; the payment is kept and you refund it manually in the Razorpay dashboard. **There are no automatic refunds.**
-- **Host subscriptions do not use Razorpay.** Hosts see plans, prices and limits, and the purchase/upgrade action is **Contact Customer Care**; a Super Admin assigns the plan manually.
+- **Host subscriptions are paid with Razorpay too, through separate orders.** A Host buys, upgrades (prorated), downgrades (scheduled for the end of the current period) or renews a plan, or tops up the wallet; the plan activates only after the backend verifies the payment (Checkout signature or webhook). Guest booking payments and Host billing never share orders, endpoints or permissions. A Super Admin can still assign a plan manually.
 - **Razorpay secrets are backend-only** (`RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`). Only the public key id reaches the browser.
-- Details: [`docs/PAYMENTS.md`](docs/PAYMENTS.md) (setup, testing with Razorpay test credentials, webhook configuration, operations).
 
 ## Current project status
 
@@ -212,9 +209,10 @@ Done:
 - React + Vite frontend with routing, design system and responsive layouts
 - Frontend wired to the API: auth (register, login, logout, session restore, verify email, password reset, profile and password change), listings with server-side filters/pagination, property details, favourites, booking and reviews, Host panel (properties, photos, bookings, subscription/billing), Super Admin panel (users, properties, bookings, destinations/amenities, plans, subscriptions), public plans page; role-based route guards (UX only; the API enforces access)
 - Django + DRF backend with `GET /api/health/`, CORS, MySQL, custom email User with database-backed roles, domain models and migrations, SimpleJWT auth with registration, email verification, password reset, RBAC permission classes, shared error handling, pagination, filtering, rate limiting and logging, and REST APIs for destinations, amenities, properties, images, bookings (with a status workflow), reviews and favourites
-- React → Django connection with a live backend-status indicator
+- React → Django connection (the `GET /api/health/` endpoint stays available for deployment health checks)
+- Self-serve Host billing: Trial / Standard / Premium / Ultimate plans, Razorpay payments, wallet, prorated upgrades, scheduled downgrades
 
-Postman collection: `backend/docs/postman/`. Real Cloudinary: run `python manage.py check_storage` once after deploying with real credentials (automated tests use a fake store). Testing: `python manage.py test` (backend), `npm test` (frontend, vitest). Seed demo data (DEBUG only): `python manage.py seed_demo_data --accounts`. Not built: Host subscription payments (plans are bought through Customer Care), automatic refunds, email notifications beyond verification/reset/invitation.
+Real Cloudinary: run `python manage.py check_storage` once after deploying with real credentials (automated tests use a fake store). Testing: `python manage.py test` (backend), `npm test` (frontend, vitest). Seed demo data (DEBUG only): `python manage.py seed_demo_data --accounts`. Not built: automatic refunds, automatic recurring renewals (each renewal is a separate payment), email notifications beyond verification/reset/invitation.
 
 ## Motion system (GSAP + ScrollTrigger)
 
@@ -230,3 +228,11 @@ Postman collection: `backend/docs/postman/`. Real Cloudinary: run `python manage
 
 The hero is a single rounded photo (`heroImage` in `pages/Home.jsx`, from the image catalog) with a light scrim and the scroll-parallax layer `[data-hero-bg]`. There is no carousel.
 
+## Deployment (Render)
+
+- **Frontend (Static Site):** root `frontend`, build `npm ci && npm run build`, publish `dist`, rewrite `/*` to `/index.html`. Set `VITE_API_BASE_URL` (https API address) and `VITE_SITE_URL` before building.
+- **Backend (Web Service):** root `backend`, build `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`, start `gunicorn config.wsgi`. Set `DJANGO_DEBUG=False`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_BEHIND_PROXY=True`, `FRONTEND_URL`, `CORS_ALLOWED_ORIGINS`, the `DB_*` variables (MySQL is hosted separately), the `EMAIL_*` variables, `CLOUDINARY_URL` and the three `RAZORPAY_*` variables. Use the live Razorpay keys and point the webhook at `https://<api>/api/payments/razorpay/webhook/` (events `payment.captured`, `order.paid`, `payment.failed`).
+- **Health check path:** `/api/health/` (answers 200 even over plain HTTP; every other path redirects to HTTPS).
+- **First deploy:** `python manage.py seed_host_plans` creates the four Host plans (review the prices in the Admin portal), then `python manage.py check_storage` once to prove the Cloudinary credentials work.
+- **Daily job:** schedule `python manage.py expire_subscriptions` (and `python manage.py expire_unpaid_bookings`) as Render Cron Jobs. Entitlement is decided by date, so a missed run never extends access.
+- **Never commit** `.env` files or database dumps; both are git-ignored.

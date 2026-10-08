@@ -10,3 +10,6 @@ mysqlclient>=2.2
 cloudinary>=1.41
 Pillow>=10.4
 razorpay>=2.0
+# Production serving: gunicorn runs the app; WhiteNoise serves the Django admin's static files.
+gunicorn>=22
+whitenoise>=6.7

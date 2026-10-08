@@ -1,1 +1,1 @@
-Latest build 2026-10-07 19:12 UTC: Cloudinary image storage (S3 removed) + Host onboarding + billing + portals + QA fixes
+Latest build 2026-10-08: final polish/production-readiness pass (gunicorn+WhiteNoise, self-hosted fonts, API-URL build guard, Cloudinary f_auto/q_auto, tap targets, README deployment notes)

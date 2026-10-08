@@ -6,6 +6,7 @@ from .purchase_views import (
     AdminBillingPaymentViewSet,
     AdminWalletTransactionViewSet,
     AdminWalletViewSet,
+    CancelScheduledChangeView,
     CancelView,
     CheckoutView,
     MyBillingPaymentsView,
@@ -36,6 +37,7 @@ urlpatterns = [
     path("billing/subscription/checkout/", CheckoutView.as_view(), name="billing-checkout"),
     path("billing/subscription/cancel/", CancelView.as_view(), name="billing-cancel"),
     path("billing/subscription/resume/", ResumeView.as_view(), name="billing-resume"),
+    path("billing/subscription/cancel-scheduled-change/", CancelScheduledChangeView.as_view(), name="billing-cancel-scheduled-change"),
     path("billing/payments/", MyBillingPaymentsView.as_view(), name="billing-payments"),
     path("billing/payments/verify/", VerifyBillingView.as_view(), name="billing-verify"),
     # Super Admin

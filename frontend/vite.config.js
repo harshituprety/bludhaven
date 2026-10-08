@@ -30,6 +30,9 @@ const circularFonts = () => ({
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const fallback = command === 'serve' ? 'http://localhost:5173' : 'https://bludhaven.example'
+  if (command === 'build' && mode === 'production' && !env.VITE_API_BASE_URL) {
+    throw new Error('VITE_API_BASE_URL is not set. Set it to the public https:// address of the Django API before building for production (see .env.example).')
+  }
   const siteUrl = (env.VITE_SITE_URL || fallback).replace(/\/$/, '')
   if (command === 'build' && !env.VITE_SITE_URL) {
     console.warn(`\n[seo] VITE_SITE_URL is not set; canonical URLs and the sitemap use ${siteUrl}. Set it before deploying.\n`)

@@ -18,7 +18,7 @@ export function fmtDateTime(value) {
 /** Prices come back as decimal strings ("1499.00"); show them as the backend sent them with a rupee sign. */
 export const fmtMoney = (amount) => (amount === null || amount === undefined || amount === '' ? '' : `₹${Number(amount).toLocaleString('en-IN')}`)
 
-/** The two whitelisted plan limits as readable lines. A missing key means "no limit" (per the API docs). */
+/** The two whitelisted plan limits as readable lines. A missing key means "no limit" (per the API). */
 export function featureLines(features) {
   const f = features ?? {}
   return [

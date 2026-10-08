@@ -105,6 +105,31 @@ def _unused_credit_paise(sub, today):
     return paid * remaining // total if total else 0
 
 
+def _is_downgrade(previous, plan, today):
+    """True when ``plan`` is cheaper (per day) than the paid period the Host is in the middle of.
+
+    Only a paid, running ACTIVE period can be downgraded later: its remaining time has already been paid for at the
+    higher price, so the cheaper plan is scheduled for when that time is up instead of replacing it now. Anything else
+    (a trial, a lapsed period) changes immediately, as before.
+    """
+    if previous is None or plan.is_trial or previous.status != S.ACTIVE or previous.payment_status != Subscription.PaymentStatus.PAID:
+        return False
+    if not (previous.start_date <= today < previous.expiry_date):
+        return False
+    current = previous.plan
+    return plan.price * current.duration_days < current.price * plan.duration_days
+
+
+def scheduled_change(user):
+    """The paid, not-yet-started period of a *different* plan queued behind the current one (a scheduled downgrade), or None."""
+    t = limits.today()
+    current = limits.current_subscription(user)
+    queued = Subscription.objects.select_related("plan").filter(user=user, status=S.ACTIVE, start_date__gt=t).order_by("start_date", "id")
+    if current is not None:
+        queued = queued.exclude(plan_id=current.plan_id)
+    return queued.first()
+
+
 def quote(user, plan, use_wallet=True) -> dict:
     """What buying ``plan`` would be for ``user`` right now. Raises Conflict for a purchase that cannot happen."""
     t = limits.today()
@@ -125,12 +150,19 @@ def quote(user, plan, use_wallet=True) -> dict:
         if Subscription.objects.filter(user=user, status=S.ACTIVE, start_date__gt=t).exists():
             raise Conflict("Your next period is already paid for.", code="renewal_already_queued")
         kind, credit = BP.Kind.RENEWAL, 0
+    elif _is_downgrade(previous, plan, t):
+        if Subscription.objects.filter(user=user, status=S.ACTIVE, start_date__gt=t).exists():
+            raise Conflict(
+                "A plan change or renewal is already scheduled. Cancel it first if you want to schedule a different one.",
+                code="change_already_scheduled",
+            )
+        kind, credit = BP.Kind.DOWNGRADE, 0  # nothing is credited: the current plan keeps running, already paid for
     else:
         kind = BP.Kind.CHANGE
         rows = Subscription.objects.filter(user=user, status__in=Subscription.ENTITLING, expiry_date__gt=t)
         credit = sum(_unused_credit_paise(r, t) for r in rows)
 
-    if kind == BP.Kind.RENEWAL and previous.status == S.ACTIVE and previous.expiry_date > t:
+    if kind in (BP.Kind.RENEWAL, BP.Kind.DOWNGRADE) and previous.status == S.ACTIVE and previous.expiry_date > t:
         start = previous.expiry_date
     else:
         start = t
@@ -201,6 +233,10 @@ def checkout(user, plan_id, use_wallet=True) -> dict:
             price_paise=q["price_paise"], credit_paise=q["credit_paise"], wallet_paise=q["wallet_paise"], amount_paise=q["amount_paise"],
         )
         if q["amount_paise"] == 0:
+            # Activated without the gateway: any Razorpay order still open for an earlier quote is now out of date.
+            BP.objects.filter(user=user, purpose=BP.Purpose.SUBSCRIPTION, status=BP.Status.CREATED).update(
+                status=BP.Status.SUPERSEDED, updated_at=timezone.now()
+            )
             payment = BP.objects.create(user=user, **fields)
             if _apply(payment, BP.Source.WALLET, None) != APPLIED:  # pragma: no cover - the wallet was read under the same lock
                 raise Conflict("Your wallet no longer covers this purchase. Please try again.", code="insufficient_wallet")
@@ -230,6 +266,23 @@ def _mark_paid(payment, status, source, entity):
     payment.save()
 
 
+def _quote_is_stale(payment, rows, today) -> bool:
+    """A Razorpay order stays payable long after checkout. Its price was fixed against the Host's subscription at that
+    moment, so apply it only if that situation still holds; otherwise it would double-count, or over-count, credit.
+
+    * NEW: the Host must still have no running subscription (an admin may have assigned one, or another purchase went through).
+    * CHANGE: the unused paid time that was credited must be exactly what it is now (a later day, or a changed
+      subscription, means a different credit).
+    A refused payment is parked as REFUND_REQUIRED, like any other payment that cannot be applied.
+    """
+    if payment.kind == BP.Kind.NEW:
+        return limits.current_subscription(payment.user) is not None
+    if payment.kind == BP.Kind.CHANGE:
+        live = [r for r in rows if r.expiry_date > today]
+        return sum(_unused_credit_paise(r, today) for r in live) != payment.credit_paise
+    return False
+
+
 def _apply(payment, source, entity) -> str:
     """Turn a valid payment into its effect. Runs inside the caller's transaction with the Host's user row locked."""
     wallet = wallet_for(payment.user, lock=True)
@@ -245,9 +298,13 @@ def _apply(payment, source, entity) -> str:
 
     plan, user, now, t = payment.plan, payment.user, timezone.now(), limits.today()
     rows = list(Subscription.objects.select_for_update().filter(user=user, status__in=Subscription.ENTITLING))
+    if _quote_is_stale(payment, rows, t):
+        logger.error("Billing payment %s: the Host's subscription changed since checkout; not applied, refund required", payment.pk)
+        _mark_paid(payment, BP.Status.REFUND_REQUIRED, source, entity)
+        return REFUND_REQUIRED
     previous = next((r for r in rows if r.pk == payment.previous_subscription_id), None)
     start = t
-    if payment.kind == BP.Kind.RENEWAL and previous is not None:
+    if payment.kind in (BP.Kind.RENEWAL, BP.Kind.DOWNGRADE) and previous is not None:
         if previous.status == S.ACTIVE and previous.expiry_date > t:
             start = previous.expiry_date  # queued right after the current period
             previous.cancel_at_period_end, previous.cancelled_at, previous.cancellation_reason = False, None, ""
@@ -364,6 +421,24 @@ def cancel(user) -> Subscription:
         current.cancel_at_period_end, current.cancelled_at, current.cancellation_reason = True, now, "host_cancelled"
         current.save()
         return current
+
+
+def cancel_scheduled_change(user) -> Subscription:
+    """Call off a scheduled downgrade. The current plan carries on untouched and what was paid for the queued period
+    goes back to the wallet."""
+    with transaction.atomic():
+        User.objects.select_for_update().get(pk=user.pk)
+        queued = scheduled_change(user)
+        if queued is None:
+            raise Conflict("There is no scheduled plan change to cancel.", code="nothing_scheduled")
+        queued = Subscription.objects.select_for_update().get(pk=queued.pk)
+        now, t = timezone.now(), limits.today()
+        credit = _unused_credit_paise(queued, t)
+        queued.status, queued.cancelled_at, queued.cancellation_reason = S.CANCELLED, now, "scheduled_change_cancelled"
+        queued.save()
+        if credit:
+            _post(wallet_for(user, lock=True), WT.PRORATION_CREDIT, credit, f"Credit for the cancelled {queued.plan.name} plan change", subscription=queued)
+        return limits.current_subscription(user)
 
 
 def resume(user) -> Subscription:

@@ -8,22 +8,7 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="%SITE_URL%/" />
     <meta name="theme-color" content="#0e5a63" />
-    <meta name="color-scheme" content="light dark" />
-    <script>
-      // Apply the saved (or system) theme before first paint so there is no light flash in dark mode.
-      // Keep in sync with src/utils/theme.js.
-      try {
-        var saved = localStorage.getItem('bludhaven-theme')
-        var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
-        if (dark) document.documentElement.classList.add('dark')
-      } catch (e) {}
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <meta name="color-scheme" content="light" />
     <title>Blüdhaven – Vacation homes worth the trip</title>
 
     <!-- Defaults for crawlers and link previews that don't run JavaScript; Seo.jsx updates these per page. -->

@@ -23,7 +23,7 @@ const STATUS_OPTIONS = [
   { value: 'EXPIRED', label: 'Expired' },
 ]
 
-// Mirrors the workflow table in docs/API.md. Only a hint for which buttons to offer: the backend decides.
+// Mirrors the backend booking workflow. Only a hint for which buttons to offer: the backend decides.
 const canCancel = (b) => b.status === 'PENDING' || b.status === 'CONFIRMED'
 const canComplete = (b) => b.status === 'CONFIRMED' && b.check_out <= todayISO()
 

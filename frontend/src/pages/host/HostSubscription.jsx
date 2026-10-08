@@ -16,7 +16,7 @@ import useApiQuery from '../../hooks/useApiQuery'
 import useAuth from '../../hooks/useAuth'
 import useBillingPayment from '../../hooks/useBillingPayment'
 import {
-  cancelSubscription, getBillingProfile, getCurrentSubscription, getWallet, listMyBillingPayments, listSubscriptions, listWalletTransactions, resumeSubscription, saveBillingProfile, startTopUp,
+  cancelScheduledChange, cancelSubscription, getBillingProfile, getCurrentSubscription, getWallet, listMyBillingPayments, listSubscriptions, listWalletTransactions, resumeSubscription, saveBillingProfile, startTopUp,
 } from '../../services/billing'
 import { apiError, fieldErrors, userMessage } from '../../services/errors'
 import { formatPaise } from '../../utils/format'
@@ -76,7 +76,7 @@ function BillingForm({ initial, onSaved }) {
   )
 }
 
-const KIND = { NEW: 'New plan', RENEWAL: 'Renewal', CHANGE: 'Plan change', TRIAL: 'Free trial' }
+const KIND = { NEW: 'New plan', RENEWAL: 'Renewal', CHANGE: 'Plan change', DOWNGRADE: 'Scheduled downgrade', TRIAL: 'Free trial' }
 
 function Wallet({ wallet, onChanged }) {
   const { user } = useAuth()
@@ -165,6 +165,7 @@ export default function HostSubscription() {
 
   const sub = current.data?.subscription ?? null
   const usage = current.data?.usage
+  const scheduled = current.data?.scheduled_change ?? null
   const past = history.data?.results?.[0] ?? null
   const refreshAll = () => {
     current.reload()
@@ -203,9 +204,19 @@ export default function HostSubscription() {
               ) : sub.status === 'ACTIVE' && sub.renews_on ? (
                 <p className="text-sm text-ink-soft">Next period starts {longDate(sub.renews_on)} (already paid).</p>
               ) : null}
+              {scheduled && (
+                <FormAlert tone="info">
+                  Your plan changes to <strong>{scheduled.plan?.name}</strong> on {longDate(scheduled.start_date)} and is already paid for. Until then you keep {sub.plan?.name}’s limits.
+                </FormAlert>
+              )}
               {propertyLimitReached(usage) && <FormAlert tone="info">You’ve reached your plan’s property limit. <Link to="/host/plans" className="font-semibold underline">Switch to a bigger plan.</Link></FormAlert>}
               {action.error && <FormAlert>{action.error}</FormAlert>}
               <div className="flex flex-wrap gap-3">
+                {scheduled && (
+                  <Button variant="secondary" onClick={() => change(cancelScheduledChange)} disabled={action.pending}>
+                    Cancel plan change
+                  </Button>
+                )}
                 {sub.cancel_at_period_end ? (
                   <Button variant="secondary" onClick={() => change(resumeSubscription)} disabled={action.pending}>Keep my plan</Button>
                 ) : (

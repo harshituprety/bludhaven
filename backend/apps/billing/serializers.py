@@ -16,7 +16,7 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubscriptionPlan
-        fields = ["id", "name", "description", "price", "duration_days", "features", "is_active", "is_trial", "created_at", "updated_at"]
+        fields = ["id", "name", "description", "price", "duration_days", "features", "is_active", "is_trial", "display_order", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate_features(self, value):

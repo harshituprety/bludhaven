@@ -13,7 +13,7 @@ beforeEach(() => {
   mock.onGet('/api/billing/wallet/').reply(200, { balance_paise: 0 })
   mock.onGet('/api/billing/wallet/transactions/').reply(200, page([]))
   mock.onGet('/api/billing/payments/').reply(200, page([]))
-  mock.onGet('/api/billing-profile/').reply(404, { error: { code: 'not_found', message: 'Not found.' } })
+  mock.onGet('/api/billing-profile/').reply(200, null)
 })
 afterEach(() => mock.restore())
 
@@ -43,6 +43,33 @@ describe('HostSubscription', () => {
     expect(screen.getByText(/reached your plan’s property limit/)).toBeInTheDocument()
     expect(screen.getByText(/Images per property: up to 8/)).toBeInTheDocument()
     expect(screen.getByText('Active')).toBeInTheDocument()
+  })
+
+  describe('a scheduled downgrade', () => {
+    const scheduled = { id: 2, status: 'ACTIVE', start_date: '2026-02-01', expiry_date: '2026-03-03', plan: { id: 9, name: 'Standard', features: {} } }
+    const usage = { properties: { used: 1, limit: 3 }, max_images_per_property: 8 }
+
+    it('says which plan starts when, and lets the Host cancel the change', async () => {
+      mock.onGet('/api/subscriptions/current/').replyOnce(200, { subscription: sub('ACTIVE'), scheduled_change: scheduled, usage })
+      mock.onGet('/api/subscriptions/').reply(200, page([sub('ACTIVE')]))
+      mock.onPost('/api/billing/subscription/cancel-scheduled-change/').reply(200, { subscription: sub('ACTIVE'), scheduled_change: null, usage, wallet: { balance_paise: 99900 } })
+      mock.onGet('/api/subscriptions/current/').reply(200, { subscription: sub('ACTIVE'), scheduled_change: null, usage })
+      renderWithAuth(<HostSubscription />, { user: USERS.host })
+      expect(await screen.findByText(/Your plan changes to/)).toHaveTextContent('Standard on 1 Feb 2026')
+      expect(screen.getByText(/already paid for/)).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel plan change' }))
+      await screen.findByText(/Next period starts|Active/)
+      expect(mock.history.post.some((r) => r.url === '/api/billing/subscription/cancel-scheduled-change/')).toBe(true)
+      expect(screen.queryByText(/Your plan changes to/)).not.toBeInTheDocument()
+    })
+
+    it('shows nothing about a change when none is scheduled', async () => {
+      mock.onGet('/api/subscriptions/current/').reply(200, { subscription: sub('ACTIVE'), scheduled_change: null, usage })
+      mock.onGet('/api/subscriptions/').reply(200, page([sub('ACTIVE')]))
+      renderWithAuth(<HostSubscription />, { user: USERS.host })
+      await screen.findByText('Active')
+      expect(screen.queryByRole('button', { name: 'Cancel plan change' })).not.toBeInTheDocument()
+    })
   })
 
   describe('wallet, statements and cancelling', () => {

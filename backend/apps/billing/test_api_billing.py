@@ -66,7 +66,7 @@ class PlanApiTests(BillingTestCase):
     def test_public_plan_output_exposes_only_plan_facts(self):
         make_plan(features={"max_properties": 2})
         item = self.as_(None).get(PLANS).json()["results"][0]
-        self.assertEqual(set(item), {"id", "name", "description", "price", "duration_days", "features", "is_active", "is_trial", "created_at", "updated_at"})
+        self.assertEqual(set(item), {"id", "name", "description", "price", "duration_days", "features", "is_active", "is_trial", "display_order", "created_at", "updated_at"})
 
     def test_validation(self):
         self.as_(self.admin)
@@ -268,7 +268,8 @@ class BillingProfileApiTests(BillingTestCase):
 
     def test_host_creates_reads_and_updates_their_own(self):
         self.as_(self.host)
-        self.assertEqual(self.client.get(BP).status_code, 404)
+        empty = self.client.get(BP)
+        self.assertEqual((empty.status_code, empty.json()), (200, None))  # no profile yet is a normal state, not an error
         r = self.client.put(BP, self.body, format="json")
         self.assertEqual((r.status_code, r.json()["country"]), (201, "India"))
         r = self.client.patch(BP, {"city": "Mumbai"}, format="json")

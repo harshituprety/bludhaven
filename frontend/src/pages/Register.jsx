@@ -1,48 +1,13 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { MailCheck } from 'lucide-react'
+import CheckEmail from '../components/CheckEmail'
 import AuthCard from '../components/AuthCard'
 import Seo from '../components/Seo'
 import PasswordField from '../components/PasswordField'
 import TextField from '../components/TextField'
-import Button from '../components/Button'
-import FormAlert from '../components/FormAlert'
 import useAuth from '../hooks/useAuth'
 import { fieldErrors } from '../services/errors'
-import { resendVerification } from '../services/auth'
 import { homeFor } from '../utils/roles'
-
-function CheckEmail({ email }) {
-  const [state, setState] = useState('idle') // idle | sending | sent | failed
-  const resend = async () => {
-    setState('sending')
-    try {
-      await resendVerification(email)
-      setState('sent')
-    } catch {
-      setState('failed')
-    }
-  }
-  return (
-    <div className="flex w-full max-w-105 flex-col items-start gap-4">
-      <span aria-hidden="true" className="grid size-14 place-items-center rounded-full bg-tint text-brand">
-        <MailCheck size={26} />
-      </span>
-      <h1 className="text-display">Check your email</h1>
-      <p className="text-ink-soft">
-        We sent a confirmation link to <strong className="text-ink">{email}</strong>. Open it to verify your address, which you need before you can book a stay or leave a review.
-      </p>
-      <FormAlert tone="success">{state === 'sent' ? 'If that address is waiting for confirmation, a new link is on its way.' : ''}</FormAlert>
-      <FormAlert>{state === 'failed' ? 'We couldn’t send that just now. Please try again in a moment.' : ''}</FormAlert>
-      <div className="flex flex-wrap gap-3">
-        <Button to="/login">Go to log in</Button>
-        <Button variant="secondary" onClick={resend} disabled={state === 'sending'}>
-          Resend the email
-        </Button>
-      </div>
-    </div>
-  )
-}
 
 export default function Register() {
   const { register, isAuthenticated, role } = useAuth()

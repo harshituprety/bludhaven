@@ -34,6 +34,19 @@ class Conflict(APIException):
     default_code = "conflict"
 
 
+class PlanLimitReached(APIException):
+    """403 ``plan_limit_reached``: the Host's current plan does not allow this. ``details`` says which limit, so a
+    client can show an upgrade prompt without parsing the message."""
+
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "Your plan does not allow this."
+    default_code = "plan_limit_reached"
+
+    def __init__(self, detail, details):
+        super().__init__(detail)
+        self.details = details
+
+
 def _error_body(code, message, details=None):
     error = {"code": code, "message": message}
     if details is not None:
@@ -76,7 +89,7 @@ def api_exception_handler(exc, context):
         data = response.data
         detail = data.get("detail") if isinstance(data, dict) else None
         message = str(detail) if detail is not None else "The request could not be completed."
-        details = {"retry_after": exc.wait} if isinstance(exc, Throttled) and exc.wait is not None else None
+        details = {"retry_after": exc.wait} if isinstance(exc, Throttled) and exc.wait is not None else getattr(exc, "details", None)
         code = _code_for(exc) if isinstance(exc, (APIException, Http404, DjangoPermissionDenied)) else "error"
         body = _error_body(code, message, details)
 

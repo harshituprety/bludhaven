@@ -8,6 +8,7 @@ Host (all need a signed-in, email-verified Host; money moves only through ``purc
 * ``POST /api/billing/subscription/quote/``       what a plan would cost right now   {plan, use_wallet}
 * ``POST /api/billing/subscription/checkout/``    buy / change / renew / start a trial   {plan, use_wallet}
 * ``POST /api/billing/subscription/cancel/`` and ``.../resume/``
+* ``POST /api/billing/subscription/cancel-scheduled-change/``   call off a scheduled downgrade
 * ``POST /api/billing/payments/verify/``          the browser reports a finished Checkout (plan purchase or top-up)
 * ``GET  /api/billing/payments/``                 the Host's payments
 
@@ -54,7 +55,9 @@ class _HostBillingView(APIView):
 def _subscription_state(request, sub):
     """The Host's current subscription and usage, in the shape the Subscription page uses."""
     data = SubscriptionSerializer(sub, context={"request": request}).data if sub else None
-    return {"subscription": data, "usage": limits.usage(request.user)}
+    queued = purchases.scheduled_change(request.user)
+    scheduled = SubscriptionSerializer(queued, context={"request": request}).data if queued else None
+    return {"subscription": data, "scheduled_change": scheduled, "usage": limits.usage(request.user)}
 
 
 def _wallet_state(user):
@@ -110,7 +113,7 @@ class QuoteView(_HostBillingView):
                 "amount_paise": q["amount_paise"], "amount_due": rupees(q["amount_paise"]),
                 "wallet_balance_paise": q["wallet_balance_paise"], "wallet_balance": rupees(q["wallet_balance_paise"]),
                 "start_date": q["start_date"], "expiry_date": q["expiry_date"],
-                "replaces": q["previous"].plan.name if q["previous"] and q["kind"] == BillingPayment.Kind.CHANGE else None,
+                "replaces": q["previous"].plan.name if q["previous"] and q["kind"] in (BillingPayment.Kind.CHANGE, BillingPayment.Kind.DOWNGRADE) else None,
                 "blockers": q["blockers"],
             }
         )
@@ -147,6 +150,12 @@ class VerifyBillingView(_HostBillingView):
 class CancelView(_HostBillingView):
     def post(self, request):
         sub = purchases.cancel(request.user)
+        return Response({**_subscription_state(request, sub), "wallet": _wallet_state(request.user)})
+
+
+class CancelScheduledChangeView(_HostBillingView):
+    def post(self, request):
+        sub = purchases.cancel_scheduled_change(request.user)
         return Response({**_subscription_state(request, sub), "wallet": _wallet_state(request.user)})
 
 

@@ -25,11 +25,14 @@ class SubscriptionPlan(models.Model):
     is_trial = models.BooleanField(
         default=False, help_text="A free plan a Host can start once, with no payment. Its price must be 0."
     )
+    display_order = models.PositiveSmallIntegerField(
+        default=0, help_text="Position on the plans pages (lowest first). Plans with the same value are ordered by price."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["price", "name"]
+        ordering = ["display_order", "price", "name"]
         constraints = [
             models.CheckConstraint(condition=Q(price__gte=0), name="plan_price_not_negative"),
             models.CheckConstraint(condition=Q(duration_days__gte=1), name="plan_duration_at_least_1_day"),
@@ -130,6 +133,7 @@ class BillingPayment(models.Model):
         NEW = "NEW", "New subscription"
         RENEWAL = "RENEWAL", "Renewal"
         CHANGE = "CHANGE", "Plan change"
+        DOWNGRADE = "DOWNGRADE", "Scheduled downgrade"  # a cheaper plan, paid now, starting when the current period ends
         TRIAL = "TRIAL", "Trial"
 
     class Status(models.TextChoices):

@@ -290,13 +290,92 @@ class ChangeRenewCancelTests(BillingCase):
         self.assertEqual((new.plan, new.previous_subscription_id), (self.pro, old.pk))
         self.assertEqual(Subscription.objects.filter(user=self.host).count(), 2)
 
-    def test_downgrade_credit_goes_to_the_wallet(self):
+    def test_a_downgrade_is_scheduled_for_the_end_of_the_paid_period_not_applied_now(self):
+        pro = self.activate(self.pro)
+        q = self.post("subscription/quote/", {"plan": self.basic.pk, "use_wallet": False}).json()
+        self.assertEqual((q["kind"], q["credit_paise"], q["amount_paise"]), ("DOWNGRADE", 0, 300000))
+        self.assertEqual(q["start_date"], pro.expiry_date.isoformat())
+        self.assertEqual(q["replaces"], "Pro")
+        order = self.buy(self.basic, use_wallet=False)
+        self.assertEqual(limits.current_subscription(self.host).plan, self.pro, "unpaid: nothing changes")
+        r = self.pay(order, payment_id="pay_2")
+        self.assertEqual(r.status_code, 200)
+        # The Pro period keeps running, paid for and untouched; Basic is queued right behind it.
+        self.assertEqual(limits.current_subscription(self.host).pk, pro.pk)
+        queued = Subscription.objects.get(user=self.host, plan=self.basic)
+        self.assertEqual((queued.status, queued.start_date, queued.expiry_date), (S.ACTIVE, pro.expiry_date, pro.expiry_date + timedelta(days=30)))
+        self.assertEqual(queued.previous_subscription_id, pro.pk)
+        self.assertEqual(BP.objects.get(razorpay_order_id=order["order_id"]).kind, BP.Kind.DOWNGRADE)
+        self.assertFalse(WalletTransaction.objects.filter(kind=WT.PRORATION_CREDIT).exists())
+        self.assertEqual(purchases.scheduled_change(self.host).pk, queued.pk)
+
+    def test_the_scheduled_plan_takes_over_when_the_period_ends(self):
+        pro = self.activate(self.pro)
+        self.pay(self.buy(self.basic, use_wallet=False), payment_id="pay_2")
+        switch = pro.expiry_date
+        with mock.patch.object(limits, "today", return_value=switch):
+            counts = purchases.process_lifecycle()
+            current = limits.current_subscription(self.host)
+        pro.refresh_from_db()
+        self.assertEqual(pro.status, S.EXPIRED)
+        self.assertEqual((current.plan, current.start_date), (self.basic, switch))
+        self.assertEqual(counts["expired"], 1)
+
+    def test_the_limits_stay_those_of_the_current_plan_until_the_switch(self):
         self.activate(self.pro)
-        r = self.post("subscription/checkout/", {"plan": self.basic.pk, "use_wallet": True})
+        self.pay(self.buy(self.basic, use_wallet=False), payment_id="pay_2")
+        for _ in range(4):  # more than Basic allows, fine under Pro
+            make_property(owner=self.host)
+        self.assertEqual(limits.usage(self.host)["properties"]["limit"], 10)
+
+    def test_only_one_change_can_be_scheduled_at_a_time(self):
+        self.activate(self.pro)
+        self.pay(self.buy(self.basic, use_wallet=False), payment_id="pay_2")
+        r = self.post("subscription/quote/", {"plan": self.basic.pk})
+        self.assertEqual((r.status_code, self.error(r)["code"]), (409, "change_already_scheduled"))
+
+    def test_a_scheduled_downgrade_can_be_cancelled_and_its_price_returns_to_the_wallet(self):
+        pro = self.activate(self.pro)
+        self.pay(self.buy(self.basic, use_wallet=False), payment_id="pay_2")
+        r = self.post("subscription/cancel-scheduled-change/")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertIsNone(body["scheduled_change"])
+        self.assertEqual(body["subscription"]["id"], pro.pk)
+        queued = Subscription.objects.get(user=self.host, plan=self.basic)
+        self.assertEqual((queued.status, queued.cancellation_reason), (S.CANCELLED, "scheduled_change_cancelled"))
+        self.assertEqual(self.balance(), 300000)
+        again = self.post("subscription/cancel-scheduled-change/")
+        self.assertEqual((again.status_code, self.error(again)["code"]), (409, "nothing_scheduled"))
+
+    def test_the_current_subscription_endpoint_reports_the_scheduled_change(self):
+        pro = self.activate(self.pro)
+        self.assertIsNone(self.as_(self.host).get("/api/subscriptions/current/").json()["scheduled_change"])
+        self.pay(self.buy(self.basic, use_wallet=False), payment_id="pay_2")
+        d = self.as_(self.host).get("/api/subscriptions/current/").json()
+        self.assertEqual(d["subscription"]["id"], pro.pk)
+        self.assertEqual((d["scheduled_change"]["plan"]["name"], d["scheduled_change"]["start_date"]), ("Basic", pro.expiry_date.isoformat()))
+
+    def test_an_upgrade_after_scheduling_a_downgrade_replaces_the_scheduled_change(self):
+        pro = self.activate(self.pro)
+        self.pay(self.buy(self.basic, use_wallet=False), payment_id="pay_2")
+        ultimate = make_plan("Ultimate", price="9000.00", duration_days=30, features={"max_properties": 25})
+        q = self.post("subscription/quote/", {"plan": ultimate.pk, "use_wallet": False}).json()
+        self.assertEqual(q["kind"], "CHANGE")
+        # The unused Pro time plus the paid-ahead Basic period are both credited, which here covers the whole price.
+        r = self.post("subscription/checkout/", {"plan": ultimate.pk, "use_wallet": False})
         self.assertEqual((r.status_code, r.json()["status"]), (200, "activated"))
-        self.assertEqual(limits.current_subscription(self.host).plan, self.basic)
-        self.assertGreaterEqual(self.balance(), 0)
-        self.assertTrue(WalletTransaction.objects.filter(kind=WT.PRORATION_CREDIT).exists())
+        self.assertEqual(limits.current_subscription(self.host).plan, ultimate)
+        self.assertEqual(Subscription.objects.get(user=self.host, plan=self.basic).status, S.CANCELLED)
+        pro.refresh_from_db()
+        self.assertEqual(pro.status, S.CANCELLED)
+        self.assertIsNone(purchases.scheduled_change(self.host))
+
+    def test_a_trial_or_unpaid_subscription_changes_immediately(self):
+        trial = make_plan("Free", price="0.00", is_trial=True, duration_days=14, features={"max_properties": 1})
+        self.assertEqual(self.post("subscription/checkout/", {"plan": trial.pk}).json()["status"], "activated")
+        q = self.post("subscription/quote/", {"plan": self.basic.pk, "use_wallet": False}).json()
+        self.assertEqual(q["kind"], "CHANGE")
 
     def test_cannot_switch_to_a_plan_smaller_than_current_usage(self):
         self.activate(self.pro)

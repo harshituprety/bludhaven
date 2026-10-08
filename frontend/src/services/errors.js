@@ -31,7 +31,8 @@ export const isWrongPortal = (error) => error?.code === 'wrong_portal'
 export function fieldErrors(error) {
   const e = apiError(error)
   const out = {}
-  if (e.details && typeof e.details === 'object' && !Array.isArray(e.details)) {
+  // plan_limit_reached carries `details` that describe the limit (limit/allowed/plan), not form fields.
+  if (e.code !== 'plan_limit_reached' && e.details && typeof e.details === 'object' && !Array.isArray(e.details)) {
     for (const [key, value] of Object.entries(e.details)) {
       if (key === 'retry_after') continue
       out[key] = Array.isArray(value) ? String(value[0]) : typeof value === 'string' ? value : JSON.stringify(value)
@@ -57,7 +58,10 @@ const FRIENDLY = {
 
 /** A sentence safe to show a person. Prefers a friendly rewrite for known codes, else the backend's own message. */
 export function userMessage(errorOrNormalized, fallback = 'Something went wrong. Please try again.') {
-  const e = errorOrNormalized?.code && 'status' in errorOrNormalized ? errorOrNormalized : apiError(errorOrNormalized)
+  // An AxiosError also has `code` and `status` fields (e.g. ERR_BAD_REQUEST, 403), so it must not be mistaken for an
+  // already-normalized error: its real message and code live in the response body.
+  const normalized = errorOrNormalized?.code && 'status' in errorOrNormalized && !errorOrNormalized.isAxiosError
+  const e = normalized ? errorOrNormalized : apiError(errorOrNormalized)
   if (e.code === 'throttled') return `Too many attempts. Please wait${e.retryAfter ? ` ${e.retryAfter} seconds` : ' a moment'} and try again.`
   if (e.status === 401 && e.code === 'no_active_account') return 'That email and password don’t match an active account.'
   if (e.status === 403 && e.code === 'permission_denied') return 'You don’t have permission to do that.'

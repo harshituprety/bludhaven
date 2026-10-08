@@ -1,15 +1,15 @@
-import useHoverMotion from "../hooks/useHoverMotion";
-import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
-import Logo from "../components/Logo";
-import LoadingState from "../components/LoadingState";
-import PageTransition from "../components/PageTransition";
-import { bannerImages } from "../assets/images";
+import useHoverMotion from '../hooks/useHoverMotion'
+import { Suspense } from 'react'
+import { Outlet } from 'react-router-dom'
+import Logo from '../components/Logo'
+import LoadingState from '../components/LoadingState'
+import PageTransition from '../components/PageTransition'
+import { bannerImages } from '../assets/images'
 
-const art = bannerImages.authLakeMountains.src;
+const art = bannerImages.authLakeMountains.src
 
 export default function AuthLayout() {
-  useHoverMotion();
+  useHoverMotion()
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <aside
@@ -23,10 +23,7 @@ export default function AuthLayout() {
           </p>
         </div>
       </aside>
-      <main
-        id="main"
-        className="relative flex flex-col items-center justify-start px-4 py-12 sm:px-8 md:justify-center"
-      >
+      <main id="main" className="relative flex flex-col items-center justify-start px-4 py-12 sm:px-8 md:justify-center">
         <div className="mb-8 self-start md:hidden">
           <Logo />
         </div>
@@ -37,5 +34,5 @@ export default function AuthLayout() {
         </PageTransition>
       </main>
     </div>
-  );
+  )
 }

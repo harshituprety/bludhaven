@@ -78,6 +78,7 @@ AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # serves collected static files (the Django admin) in production
     # CorsMiddleware must sit above anything that can generate responses.
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -151,6 +152,7 @@ USE_TZ = True
 # --- Static files -------------------------------------------------------------
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # `python manage.py collectstatic` writes here; WhiteNoise serves it
 
 # --- Django REST Framework ----------------------------------------------------
 
@@ -310,6 +312,8 @@ CSRF_COOKIE_DOMAIN = REFRESH_COOKIE_DOMAIN
 SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", not DEBUG)
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = REFRESH_COOKIE_SECURE
+# The load balancer's health probe reaches the service over plain HTTP: answer it directly instead of redirecting.
+SECURE_REDIRECT_EXEMPT = [r"^api/health/$"]
 SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_HSTS_SECONDS", "0" if DEBUG else "31536000"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_HSTS_INCLUDE_SUBDOMAINS", False)
 SECURE_CONTENT_TYPE_NOSNIFF = True
