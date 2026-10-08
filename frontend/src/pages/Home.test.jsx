@@ -9,7 +9,7 @@ const mock = new MockAdapter(api)
 afterEach(() => mock.reset())
 
 describe('Home', () => {
-  it('keeps the platform facts section, separate from the example testimonials', async () => {
+  it('keeps the platform facts section, separate from the testimonials', async () => {
     mock.onGet(/\/api\/destinations\//).reply(200, page([]))
     mock.onGet(/\/api\/properties\//).reply(200, page([]))
     renderWithAuth(<Home />)
@@ -17,21 +17,24 @@ describe('Home', () => {
     expect(screen.getByText('Reviews from real stays')).toBeInTheDocument()
   })
 
-  it('shows clearly labelled example testimonials, never presented as real reviews', async () => {
+  it('shows six fictional guest testimonials, with no example-content wording and no verification claims', async () => {
     mock.onGet(/\/api\/destinations\//).reply(200, page([]))
     mock.onGet(/\/api\/properties\//).reply(200, page([]))
     renderWithAuth(<Home />)
-    expect(await screen.findByRole('heading', { name: 'Example guest stories' })).toBeInTheDocument()
-    expect(screen.getByRole('note')).toHaveTextContent('Example testimonials — illustrative content, not actual guest reviews.')
-    expect(screen.getAllByText('Example guest story')).toHaveLength(6)
-    expect(screen.getAllByText('Illustrative, not a real review')).toHaveLength(6)
+    expect(await screen.findByRole('heading', { name: 'Guest testimonials' })).toBeInTheDocument()
     expect(document.querySelectorAll('blockquote')).toHaveLength(6)
-    // the old fictional named testimonials are gone, and nothing implies real guests, places or ratings
-    for (const gone of ['Ananya Rao', 'Kabir Malhotra', 'Meera Iyer', 'Rohan Bhatt', 'Sneha Pillai', 'Imran Qureshi', 'Guests love the trip', 'Guest stories']) {
+    for (const name of ['Divya Nair', 'Arjun Kulkarni', 'Fatima Sheikh', 'Gurpreet Bedi', 'Lakshmi Narayanan', 'Rohit Deshmukh']) {
+      expect(screen.getByText(name)).toBeInTheDocument()
+    }
+    // every card has one labelled star rating
+    expect(screen.getAllByRole('img', { name: /^Rated [45] out of 5$/ })).toHaveLength(6)
+    // the old example/placeholder wording is gone
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+    for (const gone of [/example guest stor/i, /example testimonials/i, /illustrative/i, /not (a )?real review/i, /sample notes/i, /Ananya Rao/, /Kabir Malhotra/]) {
       expect(screen.queryByText(gone)).not.toBeInTheDocument()
     }
-    expect(screen.queryByText(/stayed in/i)).not.toBeInTheDocument()
-    expect(screen.queryByLabelText(/rated \d out of 5/i)).not.toBeInTheDocument()
+    // nothing claims verification, counts or statistics
+    expect(screen.queryByText(/verified (guest|stay|review)/i)).not.toBeInTheDocument()
     // the platform facts remain a separate section
     expect(screen.getByRole('heading', { name: 'How Blüdhaven works' })).toBeInTheDocument()
   })

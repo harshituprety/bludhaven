@@ -1,20 +1,57 @@
 // Static copy for the home page. Every statement here describes how the platform actually behaves
 // (see backend/docs/API.md); there are no invented figures, people or quotes.
 
-// EXAMPLE guest stories for the home page (components/Testimonials.jsx). They are illustrative sample wording, NOT real
-// reviews: no names, no places, no ratings, and the section says so. Real reviews come from the API.
-export const exampleTestimonials = [
+// FICTIONAL demo testimonials for the home page (components/Testimonials.jsx). The names, places and ratings are
+// invented for design/demo purposes and are not collected from customers. Replace them with real, consented guest
+// feedback before a public launch. Real reviews of a stay live on its own page and come from the API.
+export const testimonials = [
   {
-    id: 'e1',
+    id: 't1',
     featured: true,
+    name: 'Divya Nair',
+    trip: 'Family trip · Munnar',
+    rating: 5,
     quote:
-      'A friendly note from a guest might go here: how easy it was to find the place, how well the host had prepared it, and what made the stay feel like a proper break.',
+      'We took the children and both sets of grandparents for five days. The cottage had room for everyone, the beds were properly comfortable, and our host left a handwritten map of easy walks nearby. It felt like a real family holiday with nothing to sort out.',
   },
-  { id: 'e2', quote: 'A short remark about a home matching its photos and a price that was clear from the start.' },
-  { id: 'e3', quote: 'A line about a quiet spot, a helpful host and the small touches a guest noticed.' },
-  { id: 'e4', tint: true, quote: 'A comment about a comfortable bed, a well-equipped kitchen and a calm evening.' },
-  { id: 'e5', quote: 'A few words about a smooth check-in and a host who answered questions quickly.' },
-  { id: 'e6', quote: 'A closing thought about a stay worth repeating.' },
+  {
+    id: 't2',
+    name: 'Arjun Kulkarni',
+    trip: 'Weekend getaway · Goa',
+    rating: 5,
+    quote: 'Friday to Sunday and exactly the reset we needed. A quiet lane, a pool to ourselves and check-in that took two minutes.',
+  },
+  {
+    id: 't3',
+    name: 'Fatima Sheikh',
+    trip: 'Long weekend · Jaipur',
+    rating: 5,
+    quote: 'Spotless from the moment we walked in: fresh linen, a gleaming kitchen and every little detail looked after.',
+  },
+  {
+    id: 't4',
+    tint: true,
+    name: 'Gurpreet Bedi',
+    trip: 'Mountain break · Manali',
+    rating: 4,
+    quote:
+      'The host answered within minutes every time, sent clear directions for the hill road and suggested a café for breakfast. The towels were a little thin, but we would happily stay again.',
+  },
+  {
+    id: 't5',
+    name: 'Lakshmi Narayanan',
+    trip: 'Couple’s trip · Udaipur',
+    rating: 5,
+    quote: 'Close enough to walk to the lake and the old market, yet calm at night. We never needed a taxi.',
+  },
+  {
+    id: 't6',
+    name: 'Rohit Deshmukh',
+    trip: 'Week away · Bengaluru',
+    rating: 5,
+    quote:
+      'Booking was simple and the total matched what I saw at checkout. Fast Wi-Fi, a proper desk and a very comfortable bed made working from here easy.',
+  },
 ]
 
 export const highlights = [

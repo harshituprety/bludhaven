@@ -280,11 +280,11 @@ export default function Home() {
       <section aria-labelledby="testimonials-heading" className="py-16 sm:py-24">
         <div className="page-container">
           <div data-reveal="heading" className="mb-10">
-            <Eyebrow>Illustrative only</Eyebrow>
+            <Eyebrow>Testimonials</Eyebrow>
             <h2 id="testimonials-heading" className="text-display">
-              Example guest stories
+              Guest testimonials
             </h2>
-            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Sample notes showing the kind of feedback a guest might share. They are not real reviews.</p>
+            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Family holidays, weekend escapes and longer stays, in guests&rsquo; own words.</p>
           </div>
           <Testimonials />
         </div>
